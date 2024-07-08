@@ -6,12 +6,16 @@ import jakarta.validation.constraints.NotNull;
 import journeybuddy.spring.converter.UserUpdateConverter;
 import journeybuddy.spring.domain.common.BaseEntity;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Setter
@@ -19,13 +23,12 @@ import java.util.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Slf4j
 public class User extends BaseEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
- //   @Column(nullable = false)
- //  private String username;
 
     @Column(nullable = false)
     private String nickname;
@@ -38,8 +41,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @NotNull(message = "Password must not be null")
     private String password;
-
-
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -68,8 +69,18 @@ public class User extends BaseEntity implements UserDetails {
     private List<Role> roles;
 
     @Override
+    @Transactional
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        log.info("UserDetailsImpl -> getAuthorities : OK");
+
+        if (roles.isEmpty()) {
+            log.info("authorities is empty");
+        }else {
+            log.info("authorities size: {}", roles.size());
+        }
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .collect(Collectors.toSet());
     }
 
     @Override

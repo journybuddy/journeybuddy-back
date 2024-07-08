@@ -42,7 +42,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             log.info("사용자를 찾았습니다. Email: {}", email);
 
             return new org.springframework.security.core.userdetails.User(
-                    String.valueOf(user.getId()),     // username
+                    user.getEmail(),     // username
                     user.getPassword(),              // password
                     getAuthorities(user.getRoles())   // authorities (roles)
             );
@@ -58,7 +58,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private List<GrantedAuthority> getAuthorities(List<Role> roles) {
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .collect(Collectors.toList());
     }
 

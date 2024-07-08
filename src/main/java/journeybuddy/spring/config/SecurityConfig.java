@@ -72,20 +72,23 @@ public class SecurityConfig{
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/swagger-ui/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/user/login/*").permitAll()
+                        .requestMatchers("/user/delete/{userId}").hasRole("USER")
+                        .requestMatchers("/user/update/{userId}").hasRole("USER")
                         .requestMatchers("/", "/user/login", "/user/register").permitAll()
                         .requestMatchers("/", "/api*", "/api-docs/**", "/swagger-ui/**","/v3/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(formLogin -> formLogin
+/*                .formLogin(formLogin -> formLogin
                         .loginPage("/user/login")
                         .permitAll()
                         .usernameParameter("email")
                         .passwordParameter("password")
                         .successHandler(new MyLoginSuccessHandler())
-                )
+                )*/
                 .exceptionHandling(exception->exception
-                        .accessDeniedHandler(new MyLoginFailureHandler())
-                //        .authenticationEntryPoint(new EntryPointDeniedHandler())
+                                .accessDeniedHandler(new MyLoginFailureHandler())
+                        //        .authenticationEntryPoint(new EntryPointDeniedHandler())
                 )
                 .securityContext((securityContext) -> {
                     securityContext.securityContextRepository(delegatingSecurityContextRepository());

@@ -1,8 +1,7 @@
 package journeybuddy.spring.domain;
-
-
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.Set;
 
 @Entity
 @Setter
@@ -14,10 +13,15 @@ public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String name;
+
+    public Role(String name) {
+        this.name = name;
+    }
+
+    @ManyToMany(mappedBy = "roles")
+    private Set<User> users;
 
 }

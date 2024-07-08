@@ -105,7 +105,7 @@ public class UserRestController {
     public ResponseEntity<?> loginForm(@RequestBody @Valid UserRequestDTO.UpdateDTO request, HttpSession httpSession) {
         Long id = userCommandService.loginCheck(request, httpSession);
         if (id != null) {
-            log.info("로그인한 사용자: {}", request.getId());
+            log.info("로그인한 사용자: {}", request.getEmail());
             Map<String, Long> response = new HashMap<>();
             response.put("userId", id);
             return ResponseEntity.ok(response);
@@ -135,3 +135,69 @@ public class UserRestController {
         return ResponseEntity.ok("Home page");
     }
 }
+/*
+
+@RestController
+@RequiredArgsConstructor
+@Validated
+@RequestMapping("/user")
+public class UserRestController {
+
+    private final UserCommandService userCommandService;
+
+    private final UserRepository userRepository;
+
+    @PostMapping("/add")
+    @ApiOperation(value = "Add a new user")
+    public ApiResponse<UserResponseDTO.UpdateResultDTO> addUser(@RequestBody @Valid UserRequestDTO.UpdateDTO request) {
+
+        if(userRepository.existsByEmail(request.getEmail())){
+            return ApiResponse.onFailure("DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다.", null);
+        }else{
+            User addUser = userCommandService.addUser(request);
+        return ApiResponse.onSuccess(UserUpdateConverter.toUpdateResultDTO(addUser));
+        }
+    }
+
+    @GetMapping("/all")
+    public ApiResponse<List<UserResponseDTO.UpdateResultDTO>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        List<UserResponseDTO.UpdateResultDTO> result = users.stream()
+                .map(UserUpdateConverter::toUpdateResultDTO)
+                .collect(Collectors.toList());
+        return ApiResponse.onSuccess(result);
+    }
+
+    @GetMapping
+    public ApiResponse<UserResponseDTO.UpdateResultDTO> getUserById(@RequestParam("id") Long userId) {
+        User user = userCommandService.getUserById(userId);
+        if (user == null) {
+            throw new TempHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        }
+        return ApiResponse.onSuccess(UserUpdateConverter.toUpdateResultDTO(user));
+    }
+
+    @PutMapping("/update/{userId}")
+    @ApiOperation(value = "update a new user")
+    public ApiResponse<UserResponseDTO.UpdateResultDTO> updateUser(
+            @PathVariable("userId") Long userId,
+            @RequestBody @Valid UserRequestDTO.UpdateDTO request) {
+        request.setId(userId);
+
+        if(userRepository.existsByEmail(request.getEmail())){
+            return ApiResponse.onFailure("DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다.", null);
+        }
+        else{
+            User updatedUser = userCommandService.updateUser(request);
+        return ApiResponse.onSuccess(UserUpdateConverter.toUpdateResultDTO(updatedUser));
+        }
+    }
+
+    @DeleteMapping
+    @ApiOperation(value = "회원탈퇴기능")
+    public ApiResponse<Object> deleteUser(@RequestParam("id") Long userId) {
+        User deletedUser = userCommandService.deletedById(userId);
+        return ApiResponse.deleteSuccess();
+    }
+
+ */
