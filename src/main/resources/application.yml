@@ -1,4 +1,7 @@
 spring:
+  jwt:
+    expiration_time: 86400000 #1일
+    secretkey: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
   datasource:
   url: jdbc:mysql://localhost:3306/study
   username: root

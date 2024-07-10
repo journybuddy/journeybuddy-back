@@ -28,6 +28,7 @@ public class UserRequestDTO {
         String nickname;
         String password;
         String username;
+        String role;
         LocalDateTime createdAt;
         LocalDateTime updatedAt;
 

@@ -8,8 +8,10 @@ import journeybuddy.spring.domain.common.BaseEntity;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Slf4j
-public class User extends BaseEntity implements UserDetails {
+public class User extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -67,44 +69,5 @@ public class User extends BaseEntity implements UserDetails {
     )
 
     private List<Role> roles;
-
-    @Override
-    @Transactional
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        log.info("UserDetailsImpl -> getAuthorities : OK");
-
-        if (roles.isEmpty()) {
-            log.info("authorities is empty");
-        }else {
-            log.info("authorities size: {}", roles.size());
-        }
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-                .collect(Collectors.toSet());
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 }
+
