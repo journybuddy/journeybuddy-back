@@ -65,7 +65,7 @@ public class UserCommandServiceImpl implements UserCommandService {
         Long userId = request.getId();
 
         // 사용자 존재 여부 확인
-        User existingUser = userRepository.findById(userId)
+        User existingUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 요청한 이메일과 기존 사용자의 이메일이 일치하는지 확인
