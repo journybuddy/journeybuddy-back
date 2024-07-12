@@ -1,6 +1,7 @@
 package journeybuddy.spring.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import journeybuddy.spring.converter.UserUpdateConverter;
@@ -44,23 +45,25 @@ public class User extends BaseEntity{
     @NotNull(message = "Password must not be null")
     private String password;
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserLike> userLikeList = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Comment> commentList = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Plan> planList = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Post> postList = new ArrayList<>();
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Vote> voteList = new ArrayList<>();
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
@@ -68,6 +71,7 @@ public class User extends BaseEntity{
             inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id")
     )
 
+    @JsonIgnore
     private List<Role> roles;
 }
 

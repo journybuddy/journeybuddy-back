@@ -4,16 +4,22 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import journeybuddy.spring.converter.UserUpdateConverter;
+import journeybuddy.spring.domain.RefreshToken;
 import journeybuddy.spring.domain.User;
+import journeybuddy.spring.repository.RefreshTokenRepository;
 import journeybuddy.spring.service.UserService.CustomUserDetails;
 import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.swing.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -23,8 +29,9 @@ public class JwtUtil {
 
         private SecretKey secretKey; //JWT 토큰 객체 키를 저장할 시크릿 키
         private final long accessTokenExpTime; //JWT 토큰 만료시간
+        private static final long refreshTokenExpTime = 1000 * 60 * 60 * 24 * 7;
 
-        public JwtUtil(@org.springframework.beans.factory.annotation.Value("${spring.jwt.secretkey}") String secretKey,
+    public JwtUtil(@org.springframework.beans.factory.annotation.Value("${spring.jwt.secretkey}") String secretKey,
                        @Value("${spring.jwt.expiration_time}") long accessTokenExpTime) {
             byte[] keyBytes = Decoders.BASE64.decode(secretKey);
             this.secretKey = Keys.hmacShaKeyFor(keyBytes);
@@ -32,7 +39,7 @@ public class JwtUtil {
         }
 
         public String getUserEmail(String token) {
-
+            log.debug("Parsing JWT Token: {}", token);
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
@@ -52,7 +59,21 @@ public class JwtUtil {
             return claims.get("role", String.class);
         }
 
-        public boolean isExpired(String token) {
+    private Claims getAllClaimsFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+/*
+    //JWT 토큰에서 인증 정보 조회
+    public Authentication getAuthentication(String token) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getAllClaimsFromToken(token));
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
+*/
+    public boolean isExpired(String token) {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
@@ -70,7 +91,17 @@ public class JwtUtil {
             return createToken(user.getEmail(), accessTokenExpTime);
         }
 
-        //JWT생성
+        //refreshToken 생성후 DB에 저장해야함
+        public String createRefreshToken(){
+
+            return Jwts.builder()
+                    .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpTime))
+                    .signWith(secretKey)
+                    .compact();
+        }
+
+
+        //JWT 생성
         public String createToken(String email,Long expiredMs) {
 
             return Jwts.builder()

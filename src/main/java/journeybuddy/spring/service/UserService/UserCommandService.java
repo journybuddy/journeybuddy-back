@@ -12,6 +12,6 @@ public interface UserCommandService {
     User deletedById(Long id);
     public Long loginCheck(UserRequestDTO.UpdateDTO request);
     public boolean EmailDuplicationCheck(UserRequestDTO.UpdateDTO request);
-
+    String getUserEmailById(Long id);
     User getUserByEmail(String userEmail);
 }

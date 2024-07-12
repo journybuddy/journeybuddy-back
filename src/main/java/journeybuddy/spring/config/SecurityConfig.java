@@ -3,6 +3,8 @@ package journeybuddy.spring.config;
 import journeybuddy.spring.config.Handler.EntryPointDeniedHandler;
 import journeybuddy.spring.config.Handler.MyLoginFailureHandler;
 import journeybuddy.spring.config.Handler.MyLoginSuccessHandler;
+import journeybuddy.spring.config.JWT.JwtAccessDeniedHandler;
+import journeybuddy.spring.config.JWT.JwtAuthenticationEntryPoint;
 import journeybuddy.spring.repository.UserRepository;
 import journeybuddy.spring.service.UserService.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -108,8 +110,8 @@ public class SecurityConfig{
                         .successHandler(new MyLoginSuccessHandler())
                 )*/
                 .exceptionHandling(exception->exception
-                                .accessDeniedHandler(new MyLoginFailureHandler())
-                //                .authenticationEntryPoint(new EntryPointDeniedHandler())
+                                .accessDeniedHandler(new JwtAccessDeniedHandler())
+                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                 )
                 .securityContext((securityContext) -> {
         //            securityContext.securityContextRepository(delegatingSecurityContextRepository());

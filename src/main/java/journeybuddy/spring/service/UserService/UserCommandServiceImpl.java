@@ -1,26 +1,21 @@
 package journeybuddy.spring.service.UserService;
 
 
-import jakarta.servlet.http.HttpSession;
 import journeybuddy.spring.apiPayload.code.status.ErrorStatus;
 import journeybuddy.spring.apiPayload.exception.handler.TempHandler;
 import journeybuddy.spring.config.JWT.JwtUtil;
 import journeybuddy.spring.converter.UserUpdateConverter;
 import journeybuddy.spring.domain.Role;
 import journeybuddy.spring.domain.User;
+import journeybuddy.spring.repository.RefreshTokenRepository;
 import journeybuddy.spring.repository.RoleRepository;
 import journeybuddy.spring.repository.UserRepository;
 import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +32,6 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RoleRepository roleRepository;
-    private final JwtUtil jwtUtil;
 
     @Override
     public User addUser(UserRequestDTO.UpdateDTO request) {
@@ -49,8 +43,6 @@ public class UserCommandServiceImpl implements UserCommandService {
 
         addUser.setRoles(Collections.singletonList(defaultRole));
         if(!userRepository.existsByEmail(request.getEmail())){
-
-
             return userRepository.save(addUser);
 
         }else{
@@ -62,35 +54,31 @@ public class UserCommandServiceImpl implements UserCommandService {
 
     @Override
     public User updateUser(UserRequestDTO.UpdateDTO request,String email) {
-        Long userId = request.getId();
 
-        // 사용자 존재 여부 확인
         User existingUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 요청한 이메일과 기존 사용자의 이메일이 일치하는지 확인
         if (!request.getEmail().equals(existingUser.getEmail())) {
             throw new RuntimeException("사용자 인증 정보가 일치하지 않습니다.");
         }
 
-        // 이미 존재하는 이메일인지 확인
+        /* 이메일 바꾸기 어떻게 할건지 정하기. 현재 수정기능은 이메일과 비밀번호 인증해야 가능함
         if (userRepository.existsByEmail(request.getEmail()) && !request.getEmail().equals(existingUser.getEmail())) {
-            throw new RuntimeException("이미 존재하는 이메일입니다.");
+            log.error("이미 존재하는 이메일");
+            throw new TempHandler(ErrorStatus._BAD_REQUEST);
         }
+        */
 
-        // 기타 필드 업데이트
         existingUser.setNickname(request.getNickname());
         existingUser.setEmail(request.getEmail());
         existingUser.setBio(request.getBio());
         existingUser.setUpdatedAt(request.getUpdatedAt());
 
-        // 사용자 저장 및 반환
         return userRepository.save(existingUser);
     }
 
     @Override
     public User getUserById(Long id) {
-
         return userRepository.findById(id)
                 .orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
     }
@@ -109,13 +97,11 @@ public class UserCommandServiceImpl implements UserCommandService {
     public Long loginCheck(UserRequestDTO.UpdateDTO request) {
         User loginUser = userRepository.findByEmail(request.getEmail()).orElse(null);
         if (loginUser != null &&  bCryptPasswordEncoder.matches(request.getPassword(), loginUser.getPassword())) {
-
-            log.info("loginUser:" + loginUser.getId());
+            log.info("로그인한 유저:" + loginUser.getId());
             return loginUser.getId();
         }
         return null;
     }
-
 
     @Override
     public boolean EmailDuplicationCheck(UserRequestDTO.UpdateDTO request) {
@@ -123,9 +109,16 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
+    public String getUserEmailById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        return user.getEmail();
+    }
+
+    @Override
     public User getUserByEmail(String userEmail) {
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
     }
+
 
 }
