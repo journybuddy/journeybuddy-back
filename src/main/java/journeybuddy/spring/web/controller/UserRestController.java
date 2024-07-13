@@ -1,45 +1,30 @@
 package journeybuddy.spring.web.controller;
 
-import io.swagger.annotations.ApiOperation;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import journeybuddy.spring.apiPayload.ApiResponse;
-import journeybuddy.spring.apiPayload.code.status.ErrorStatus;
 import journeybuddy.spring.apiPayload.exception.handler.TempHandler;
 import journeybuddy.spring.config.JWT.JwtUtil;
-import journeybuddy.spring.config.JWT.SecurityUtils;
 import journeybuddy.spring.converter.UserUpdateConverter;
 import journeybuddy.spring.domain.RefreshToken;
 import journeybuddy.spring.domain.User;
 import journeybuddy.spring.repository.RefreshTokenRepository;
 import journeybuddy.spring.repository.UserRepository;
 import journeybuddy.spring.service.UserService.CustomUserDetails;
-import journeybuddy.spring.service.UserService.CustomUserDetailsService;
 import journeybuddy.spring.service.UserService.UserCommandService;
 import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import journeybuddy.spring.web.dto.UserDTO.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.security.SecurityUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +93,7 @@ public class UserRestController {
             if (!authentication.getName().equals(userEmail)) {
                 log.error("접근 권한 없는 사용자");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(ApiResponse.onFailure("FORBIDDEN","접근권한없는사용자",null));
+                        .body(ApiResponse.onFailure("common403","접근권한없는사용자",null));
             }
 
             if (bindingResult.hasErrors()) {
@@ -207,17 +192,17 @@ public class UserRestController {
                 } else {
                     log.error("비밀번호가 일치하지 않음");
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body(ApiResponse.onFailure("UNAUTHORIZED","비밀번호가 일치하지 않음",null));
+                            .body(ApiResponse.onFailure("common401","비밀번호가 일치하지 않음",null));
                 }
             } else {
                 log.error("인증 실패");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.onFailure("UNAUTHORIZED","이메일이 일치하지 않습니다", null));
+                        .body(ApiResponse.onFailure("common401","이메일이 일치하지 않습니다", null));
             }
         } catch (RuntimeException e) {
             log.error("뭔가 잘못됨", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.onFailure("SERVER ERROR","서버문제발생",null));
+                    .body(ApiResponse.onFailure("common500","서버문제발생",null));
         }
     }
 
@@ -235,70 +220,3 @@ public class UserRestController {
         return ApiResponse.onSuccess(result);
     }
 }
-
-/*
-
-@RestController
-@RequiredArgsConstructor
-@Validated
-@RequestMapping("/user")
-public class UserRestController {
-
-    private final UserCommandService userCommandService;
-
-    private final UserRepository userRepository;
-
-    @PostMapping("/add")
-    @ApiOperation(value = "Add a new user")
-    public ApiResponse<UserResponseDTO.UpdateResultDTO> addUser(@RequestBody @Valid UserRequestDTO.UpdateDTO request) {
-
-        if(userRepository.existsByEmail(request.getEmail())){
-            return ApiResponse.onFailure("DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다.", null);
-        }else{
-            User addUser = userCommandService.addUser(request);
-        return ApiResponse.onSuccess(UserUpdateConverter.toUpdateResultDTO(addUser));
-        }
-    }
-
-    @GetMapping("/all")
-    public ApiResponse<List<UserResponseDTO.UpdateResultDTO>> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        List<UserResponseDTO.UpdateResultDTO> result = users.stream()
-                .map(UserUpdateConverter::toUpdateResultDTO)
-                .collect(Collectors.toList());
-        return ApiResponse.onSuccess(result);
-    }
-
-    @GetMapping
-    public ApiResponse<UserResponseDTO.UpdateResultDTO> getUserById(@RequestParam("id") Long userId) {
-        User user = userCommandService.getUserById(userId);
-        if (user == null) {
-            throw new TempHandler(ErrorStatus.MEMBER_NOT_FOUND);
-        }
-        return ApiResponse.onSuccess(UserUpdateConverter.toUpdateResultDTO(user));
-    }
-
-    @PutMapping("/update/{userId}")
-    @ApiOperation(value = "update a new user")
-    public ApiResponse<UserResponseDTO.UpdateResultDTO> updateUser(
-            @PathVariable("userId") Long userId,
-            @RequestBody @Valid UserRequestDTO.UpdateDTO request) {
-        request.setId(userId);
-
-        if(userRepository.existsByEmail(request.getEmail())){
-            return ApiResponse.onFailure("DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다.", null);
-        }
-        else{
-            User updatedUser = userCommandService.updateUser(request);
-        return ApiResponse.onSuccess(UserUpdateConverter.toUpdateResultDTO(updatedUser));
-        }
-    }
-
-    @DeleteMapping
-    @ApiOperation(value = "회원탈퇴기능")
-    public ApiResponse<Object> deleteUser(@RequestParam("id") Long userId) {
-        User deletedUser = userCommandService.deletedById(userId);
-        return ApiResponse.deleteSuccess();
-    }
-
- */

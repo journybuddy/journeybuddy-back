@@ -18,17 +18,8 @@ import java.util.List;
 public class Place { //원하는 장소 직접입력
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    private Long id;
+    private String address;  // 주소가 기본 키로 사용됨
     private String name;
-    private Double latitude;
-    private Double longtitude;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id")
-    private Schedule schedule;
-
-//    @OneToMany(mappedBy = "vote", cascade = CascadeType.ALL)
-    //   private List<Vote> voteList = new ArrayList<>();
+    private double latitude;
+    private double longitude;
 }

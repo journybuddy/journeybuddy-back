@@ -3,24 +3,13 @@ package journeybuddy.spring.config.JWT;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import journeybuddy.spring.converter.UserUpdateConverter;
-import journeybuddy.spring.domain.RefreshToken;
 import journeybuddy.spring.domain.User;
-import journeybuddy.spring.repository.RefreshTokenRepository;
 import journeybuddy.spring.service.UserService.CustomUserDetails;
-import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import javax.swing.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -59,29 +48,29 @@ public class JwtUtil {
             return claims.get("role", String.class);
         }
 
-    private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-/*
-    //JWT 토큰에서 인증 정보 조회
-    public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getAllClaimsFromToken(token));
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-    }
-*/
-    public boolean isExpired(String token) {
-            Claims claims = Jwts.parserBuilder()
+        private Claims getAllClaimsFromToken(String token) {
+            return Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            Date expiration = claims.getExpiration();
-            return expiration.before(new Date());
         }
+/*
+        //JWT 토큰에서 인증 정보 조회
+        public Authentication getAuthentication(String token) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(this.getAllClaimsFromToken(token));
+            return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        }
+*/
+        public boolean isExpired(String token) {
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(secretKey)
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody();
+                Date expiration = claims.getExpiration();
+                return expiration.before(new Date());
+            }
 
         //accessToken 생성
         public String createAccessToken(Authentication authentication) {

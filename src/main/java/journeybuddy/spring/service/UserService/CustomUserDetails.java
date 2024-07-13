@@ -1,17 +1,14 @@
 package journeybuddy.spring.service.UserService;
 
 import journeybuddy.spring.domain.User;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
+//UserDetails는 사용자의 정보를 제공하는 인터페이스
 @Slf4j
 public class CustomUserDetails implements UserDetails {
 

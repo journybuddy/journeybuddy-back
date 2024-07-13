@@ -1,8 +1,5 @@
 package journeybuddy.spring.config;
 
-import journeybuddy.spring.config.Handler.EntryPointDeniedHandler;
-import journeybuddy.spring.config.Handler.MyLoginFailureHandler;
-import journeybuddy.spring.config.Handler.MyLoginSuccessHandler;
 import journeybuddy.spring.config.JWT.JwtAccessDeniedHandler;
 import journeybuddy.spring.config.JWT.JwtAuthenticationEntryPoint;
 import journeybuddy.spring.repository.UserRepository;
@@ -12,10 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,7 +18,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
@@ -74,6 +67,7 @@ public class SecurityConfig{
         );
     }
 
+    //다른 도메인에서 리소스에 접근할 수 있도록 웹 어플리케이션간의 리소스 공유를 허용하는 메커니즘
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -102,13 +96,6 @@ public class SecurityConfig{
                                 .anyRequest().permitAll()
                         //        .anyRequest().authenticated()
                 )
-/*                .formLogin(formLogin -> formLogin
-                        .loginPage("/user/login")
-                        .permitAll()
-                        .usernameParameter("email")
-                        .passwordParameter("password")
-                        .successHandler(new MyLoginSuccessHandler())
-                )*/
                 .exceptionHandling(exception->exception
                                 .accessDeniedHandler(new JwtAccessDeniedHandler())
                                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())

@@ -1,6 +1,5 @@
 package journeybuddy.spring.web.dto.UserDTO;
 
-import journeybuddy.spring.domain.User;
 import lombok.*;
 
 import java.time.LocalDateTime;

@@ -1,21 +1,15 @@
 package journeybuddy.spring.service.UserService;
-
-
 import journeybuddy.spring.apiPayload.code.status.ErrorStatus;
 import journeybuddy.spring.apiPayload.exception.handler.TempHandler;
-import journeybuddy.spring.config.JWT.JwtUtil;
 import journeybuddy.spring.converter.UserUpdateConverter;
 import journeybuddy.spring.domain.Role;
 import journeybuddy.spring.domain.User;
-import journeybuddy.spring.repository.RefreshTokenRepository;
 import journeybuddy.spring.repository.RoleRepository;
 import journeybuddy.spring.repository.UserRepository;
 import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
