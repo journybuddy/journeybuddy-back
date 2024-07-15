@@ -220,8 +220,4 @@ public class UserRestController {
         return ApiResponse.onSuccess(result);
     }
 
-    @GetMapping("/user/get")
-    public ResponseEntity<User> getUser(@RequestParam String userEmail) throws Exception {
-        return new ResponseEntity<>( userCommandService.getUserByEmail(userEmail), HttpStatus.OK);
-    }
 }
