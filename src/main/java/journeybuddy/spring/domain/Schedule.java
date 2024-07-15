@@ -15,14 +15,14 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Schedule {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private String address;
     private LocalDateTime dateTime;
 
-    @ManyToOne
-    @JoinColumn(name = "address", referencedColumnName = "address", nullable = false)
-    private Place place;
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
+    private List<Place> placeList = new ArrayList<>();
 
 }

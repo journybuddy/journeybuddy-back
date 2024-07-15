@@ -21,8 +21,6 @@ public class Vote extends BaseEntity {
 
     private String description;
 
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

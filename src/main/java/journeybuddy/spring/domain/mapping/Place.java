@@ -17,9 +17,16 @@ import java.util.List;
 @AllArgsConstructor
 public class Place { //원하는 장소 직접입력
 
+
     @Id
-    private String address;  // 주소가 기본 키로 사용됨
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    private Long id;
     private String name;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longtitude;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_id")
+    private Schedule schedule;
 }
