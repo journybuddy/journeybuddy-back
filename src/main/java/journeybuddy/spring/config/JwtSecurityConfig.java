@@ -1,4 +1,4 @@
-package journeybuddy.spring.config;
+/* package journeybuddy.spring.config;
 
 
 import journeybuddy.spring.config.JWT.JwtFilter;
@@ -24,3 +24,4 @@ public class JwtSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurity
         );
     }
 }
+*/

@@ -2,9 +2,12 @@ package journeybuddy.spring.config;
 
 import journeybuddy.spring.config.JWT.JwtAccessDeniedHandler;
 import journeybuddy.spring.config.JWT.JwtAuthenticationEntryPoint;
+import journeybuddy.spring.config.JWT.JwtFilter;
+import journeybuddy.spring.config.JWT.JwtUtil;
 import journeybuddy.spring.repository.UserRepository;
 import journeybuddy.spring.service.UserService.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +21,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
@@ -34,6 +38,14 @@ public class SecurityConfig{
 
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
+
+
+    @Value("${spring.jwt.secretkey}")
+    private String secretKey;
+
+    @Value("${spring.jwt.expiration_time}")
+    private long accessTokenExpTime;
+
 
 
     @Bean
@@ -82,6 +94,7 @@ public class SecurityConfig{
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        JwtUtil jwtUtil = new JwtUtil(secretKey, customUserDetailsService, accessTokenExpTime);
         http
 
                 .csrf(AbstractHttpConfigurer::disable)
@@ -90,12 +103,13 @@ public class SecurityConfig{
                         .requestMatchers(HttpMethod.POST, "/user/login/*").permitAll()
                         .requestMatchers("/user/delete/*").permitAll()
                         .requestMatchers("/user/update/*").permitAll()
-                                .requestMatchers("/user/**").permitAll()
+                        //        .requestMatchers("/user/**").permitAll()
                         .requestMatchers("/", "/user/login", "/user/register").permitAll()
                         .requestMatchers("/", "/api*", "/api-docs/**", "/swagger-ui/**","/v3/**").permitAll()
-                                .anyRequest().permitAll()
-                        //        .anyRequest().authenticated()
+                        //        .anyRequest().permitAll()
+                                .anyRequest().authenticated()
                 )
+                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception->exception
                                 .accessDeniedHandler(new JwtAccessDeniedHandler())
                                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
@@ -109,6 +123,7 @@ public class SecurityConfig{
                         .logoutSuccessUrl("/").permitAll()
                         .invalidateHttpSession(true)
                         .permitAll()
+
                 );
         return http.build();
     }

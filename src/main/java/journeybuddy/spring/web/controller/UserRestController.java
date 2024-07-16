@@ -17,11 +17,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -76,7 +79,9 @@ public class UserRestController {
     }
 
 
+/*
     @PutMapping("/update/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateForm(@PathVariable("userId") Long id,
                                         @RequestBody @Valid UserRequestDTO.UpdateDTO request,
                                         BindingResult bindingResult) {
@@ -108,26 +113,60 @@ public class UserRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 업데이트 실패");
         }
     }
-
-    @GetMapping("/update/{userEmail}")
-    public ResponseEntity<?> showUpdateForm(@PathVariable("userEmail") String userEmail) {
-        Authentication userDetails = SecurityContextHolder.getContext().getAuthentication();
-        String username = userDetails.getName();
-
-        String email = userDetails.getName();
-        if (!email.equals(userEmail)) {
-            log.error("접근 권한 없는 사용자");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근 권한 없음");
-        }
+*/
+/*
+    @PutMapping("/update/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateForm(@PathVariable("userId") Long id,
+                                        @RequestBody @Valid UserRequestDTO.UpdateDTO request,
+                                        BindingResult bindingResult) {
         try {
-            User user = userCommandService.getUserByEmail(userEmail); // userEmail을 기준으로 사용자 정보를 조회
-            UserResponseDTO.UpdateResultDTO userDTO = UserUpdateConverter.toUpdateResultDTO(user);
-            log.info("접근 권한 있는 사용자");
-            return ResponseEntity.ok(userDTO);
-        } catch (RuntimeException e) {
-            log.error("사용자 정보 조회 중 에러 발생: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증되지 않은 사용자");
+            }
+
+            String userEmail = authentication.getName(); // 현재 인증된 사용자의 이메일 가져오기
+
+            User updatedUser = userCommandService.updateUser(request, userEmail);
+            log.info("사용자 업데이트 완료");
+            return ResponseEntity.ok(ApiResponse.onSuccess(updatedUser));
+        } catch (TempHandler e) {
+            log.error("사용자 업데이트 실패: {}", e.getErrorReasonHttpStatus());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 업데이트 실패");
         }
+    }
+
+/*
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<?> updateForm(@PathVariable("userId") Long id,
+                                        @RequestBody @Valid UserRequestDTO.UpdateDTO request,
+                                        BindingResult bindingResult) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증되지 않은 사용자");
+            }
+
+            String userEmail = authentication.getName(); // 현재 인증된 사용자의 이메일 가져오기
+
+            User updatedUser = userCommandService.updateUser(request, userEmail);
+            log.info("사용자 업데이트 완료");
+            return ResponseEntity.ok(ApiResponse.onSuccess(updatedUser));
+        } catch (TempHandler e) {
+            log.error("사용자 업데이트 실패: {}", e.getErrorReasonHttpStatus());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 업데이트 실패");
+        }
+    }
+
+ */
+
+    @PutMapping("/update/{email}")
+    @PreAuthorize("#email == authentication.principal.username")
+    public ResponseEntity<?> updateUser(@PathVariable("email") String email,@RequestBody UserRequestDTO.UpdateDTO request){
+        userCommandService.updateUser(request);
+        log.info("회원업데이트 완료");
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/login")
@@ -172,39 +211,35 @@ public class UserRestController {
     }
 
     @DeleteMapping("/delete/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteUser(@PathVariable("userId") Long userId,
                                         @RequestBody @Valid UserRequestDTO.LoginDTO request) {
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String userEmail = String.valueOf(userCommandService.getUserEmailById(userId));
-
-        User user = userCommandService.getUserByEmail(userEmail);
+        String email = String.valueOf(userCommandService.getUserEmailById(userId));
+        User user = userCommandService.getUserByEmail(email);
         String encodedPassword = user.getPassword();
 
+        if (!request.getEmail().equals(email)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.onFailure("common403", "접근권한없는사용자", null));
+        }
+
+        if (!bCryptPasswordEncoder.matches(request.getPassword(), encodedPassword)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.onFailure("common401", "비밀번호가 일치하지 않음", null));
+        }
 
         try {
-            if (authentication.getName().equals(userEmail)) {
-                if (bCryptPasswordEncoder.matches(request.getPassword(), encodedPassword)) {
-                    userCommandService.deletedById(userId);
-                    log.info("탈퇴 처리 완료");
-                    return ResponseEntity.ok().build();
-                } else {
-                    log.error("비밀번호가 일치하지 않음");
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body(ApiResponse.onFailure("common401","비밀번호가 일치하지 않음",null));
-                }
-            } else {
-                log.error("인증 실패");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.onFailure("common401","이메일이 일치하지 않습니다", null));
-            }
+            userCommandService.deletedById(userId);
+            log.info("탈퇴 처리 완료");
+            return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             log.error("뭔가 잘못됨", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.onFailure("common500","서버문제발생",null));
+                    .body(ApiResponse.onFailure("common500", "서버문제발생", null));
         }
     }
+
 
     @GetMapping("/home")
     public ResponseEntity<String> showHome() {
@@ -220,4 +255,27 @@ public class UserRestController {
         return ApiResponse.onSuccess(result);
     }
 
+    @PostMapping("/test") //인증확인용 메소드
+    @PreAuthorize("isAuthenticated()")
+    public String test() {
+        return "success";
+    }
+
+    @GetMapping("/user/get")
+    @PreAuthorize("#email == authentication.principal.username")
+    public ResponseEntity<?> getUser(@RequestParam String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/user/get2")
+    public ResponseEntity<User> getUser2(@RequestParam String email) {
+        try {
+            User userResponseDTO = userCommandService.getUserByEmail(email);
+            return ResponseEntity.ok(userResponseDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

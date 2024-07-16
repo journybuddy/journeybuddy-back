@@ -6,7 +6,7 @@ import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public interface UserCommandService {
-    User updateUser(UserRequestDTO.UpdateDTO request,String username);
+    User updateUser(UserRequestDTO.UpdateDTO request);
     User addUser(UserRequestDTO.UpdateDTO request);
     User getUserById(Long id);
     User deletedById(Long id);

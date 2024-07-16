@@ -47,9 +47,9 @@ public class UserCommandServiceImpl implements UserCommandService {
 
 
     @Override
-    public User updateUser(UserRequestDTO.UpdateDTO request,String email) {
+    public User updateUser(UserRequestDTO.UpdateDTO request) {
 
-        User existingUser = userRepository.findByEmail(email)
+        User existingUser = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (!request.getEmail().equals(existingUser.getEmail())) {
@@ -109,9 +109,9 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
-    public User getUserByEmail(String userEmail) {
-        return userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
     }
 
 

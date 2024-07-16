@@ -1,6 +1,7 @@
 package journeybuddy.spring.web.dto.PostDTO;
 
 
+import journeybuddy.spring.domain.User;
 import lombok.*;
 
 @AllArgsConstructor
@@ -13,6 +14,8 @@ public class PostResponseDTO {
     private String title;
     private String content;
     private Integer listSize;
-    private Integer totalPage;
+    private Integer currentPage;
+    private Integer totalPages;
+    private Long userId;
 
 }
