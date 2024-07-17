@@ -36,22 +36,27 @@ public class User extends BaseEntity{
     private String password;
 
     @JsonIgnore
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserLike> userLikeList = new ArrayList<>();
 
     @JsonIgnore
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Comment> commentList = new ArrayList<>();
 
     @JsonIgnore
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<TravelPlan> planList = new ArrayList<>();
 
     @JsonIgnore
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Post> postList = new ArrayList<>();
 
     @JsonIgnore
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Vote> voteList = new ArrayList<>();
     @ManyToMany(fetch = FetchType.EAGER)

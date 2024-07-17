@@ -3,18 +3,21 @@ package journeybuddy.spring.web.controller;
 import jakarta.validation.Valid;
 import journeybuddy.spring.apiPayload.ApiResponse;
 import journeybuddy.spring.apiPayload.exception.handler.TempHandler;
+import journeybuddy.spring.config.JWT.CustomUserDetails;
 import journeybuddy.spring.config.JWT.JwtUtil;
 import journeybuddy.spring.converter.UserUpdateConverter;
 import journeybuddy.spring.domain.RefreshToken;
 import journeybuddy.spring.domain.User;
 import journeybuddy.spring.repository.RefreshTokenRepository;
 import journeybuddy.spring.repository.UserRepository;
-import journeybuddy.spring.service.UserService.CustomUserDetails;
+import journeybuddy.spring.config.JWT.CustomUserDetailsService;
+import journeybuddy.spring.service.PostService.PostCommandServiceImpl;
 import journeybuddy.spring.service.UserService.UserCommandService;
 import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import journeybuddy.spring.web.dto.UserDTO.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,11 +48,8 @@ public class UserRestController {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
+    private final PostCommandServiceImpl postCommandServiceImpl;
 
-    @GetMapping("/register")
-    public ResponseEntity<UserRequestDTO.UpdateDTO> getRegistrationForm() {
-        return ResponseEntity.ok(new UserRequestDTO.UpdateDTO());
-    }
     @PostMapping("/register")
     public ResponseEntity<?> registrationForm(@RequestBody @Valid UserRequestDTO.UpdateDTO request,
                                               BindingResult bindingResult) {
@@ -169,10 +169,6 @@ public class UserRestController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<String> getLoginForm() {
-        return ResponseEntity.ok("Login page");
-    }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginForm(@RequestBody @Valid UserRequestDTO.LoginDTO request) {
@@ -241,11 +237,6 @@ public class UserRestController {
     }
 
 
-    @GetMapping("/home")
-    public ResponseEntity<String> showHome() {
-        return ResponseEntity.ok("Home page");
-    }
-
     @GetMapping("/all")
     public ApiResponse<List<UserResponseDTO.UpdateResultDTO>> getAllUsers() {
         List<User> users = userRepository.findAll();
@@ -261,14 +252,6 @@ public class UserRestController {
         return "success";
     }
 
-    @GetMapping("/user/get")
-    @PreAuthorize("#email == authentication.principal.username")
-    public ResponseEntity<?> getUser(@RequestParam String email) {
-        return userRepository.findByEmail(email)
-                .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/user/get2")
     public ResponseEntity<User> getUser2(@RequestParam String email) {
         try {
@@ -278,4 +261,5 @@ public class UserRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 }

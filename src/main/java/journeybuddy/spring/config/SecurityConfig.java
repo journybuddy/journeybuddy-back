@@ -1,11 +1,7 @@
 package journeybuddy.spring.config;
 
-import journeybuddy.spring.config.JWT.JwtAccessDeniedHandler;
-import journeybuddy.spring.config.JWT.JwtAuthenticationEntryPoint;
-import journeybuddy.spring.config.JWT.JwtFilter;
-import journeybuddy.spring.config.JWT.JwtUtil;
+import journeybuddy.spring.config.JWT.*;
 import journeybuddy.spring.repository.UserRepository;
-import journeybuddy.spring.service.UserService.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -106,8 +102,8 @@ public class SecurityConfig{
                         //        .requestMatchers("/user/**").permitAll()
                         .requestMatchers("/", "/user/login", "/user/register").permitAll()
                         .requestMatchers("/", "/api*", "/api-docs/**", "/swagger-ui/**","/v3/**").permitAll()
-                        //        .anyRequest().permitAll()
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
+                        //        .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception->exception

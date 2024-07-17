@@ -2,7 +2,7 @@ package journeybuddy.spring.config.JWT;
 
 import journeybuddy.spring.domain.User;
 import journeybuddy.spring.repository.UserRepository;
-import journeybuddy.spring.service.UserService.CustomUserDetails;
+import journeybuddy.spring.config.JWT.CustomUserDetails;
 import journeybuddy.spring.service.UserService.UserCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

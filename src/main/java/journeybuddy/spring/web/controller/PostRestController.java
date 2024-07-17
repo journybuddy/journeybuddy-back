@@ -1,6 +1,8 @@
 package journeybuddy.spring.web.controller;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.OAuth2Definition;
 import journeybuddy.spring.apiPayload.ApiResponse;
 import journeybuddy.spring.apiPayload.exception.handler.TempHandler;
 import journeybuddy.spring.config.JWT.SecurityUtil;
@@ -18,12 +20,19 @@ import journeybuddy.spring.web.dto.UserDTO.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.net.http.HttpResponse;
 import java.util.List;
@@ -38,18 +47,7 @@ import java.util.stream.Collectors;
 public class PostRestController {
 
     private final PostCommandService postCommandService;
-
-    //내가 쓴 모든 게시글 조회, 페이징 처리하기
-    //stream함수 매우 중요! 꼭 다시보기
-    @GetMapping("/{userEmail}")
-    public ApiResponse<List<PostResponseDTO>> checkMyPost(@PathVariable("userEmail") String userEmail) {
-        List<Post> posts = postCommandService.checkMyPost(userEmail);
-        List<PostResponseDTO> postResponseDTOS = posts.stream()
-                        .map(PostConverter::toPostResponseDTO)
-                                .collect(Collectors.toList());
-        log.info("게시글 조회 userId = {}", userEmail);
-        return ApiResponse.onSuccess(postResponseDTOS);
-    }
+    private final PostRepository postRepository;
 
     //게시글 저장
     @PostMapping("/save")
@@ -65,37 +63,65 @@ public class PostRestController {
     }
 
     //내가 쓴 게시글 상세조회(클릭시)
-    @GetMapping("/postDetail/{postId}")
-//    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> checkMyPostDetail(@PathVariable("postId") Long postId) {
-        try {
-            Post detailPost = postCommandService.checkPostDetail(postId);
+    @GetMapping("/mypost/{postId}")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<?> checkMyPostDetail(@PathVariable("postId") Long postId, @AuthenticationPrincipal UserDetails userDetails) {
+        if (postId != null) {
+            Post detailPost = postCommandService.checkPostDetail(postId, userDetails.getUsername());
             PostResponseDTO detailDTO = PostConverter.toPostResponseDTO(detailPost);
-            return ResponseEntity.ok(ApiResponse.onSuccess(detailDTO));
-        } catch (TempHandler e) {
-            log.error("포스트 조회 중 에러 발생: ", e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.onFailure("COMMON404", "존재하지 않는포스트.", null));
+            return ApiResponse.onSuccess(detailDTO);
+        } else {
+            log.error("포스트 조회 중 에러 발생: ");
+            return ApiResponse.onFailure("COMMON404", "존재하지 않는포스트.", null);
         }
     }
 
     //게시글 삭제
     @DeleteMapping("/delete/{postId}")
- //   @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId) {
-        try {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId, @AuthenticationPrincipal Authentication authentication) {
+        if (postId != null) {
             postCommandService.deletePost(postId);
             log.info("Post with id {} deleted successfully", postId);
             return ResponseEntity.ok(ApiResponse.onSuccess(null));
-        } catch (TempHandler e) {
-            log.error("Failed to delete post with id {}: {}", postId, e.getMessage());
+        } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.onFailure("COMMON404", "사용자 정보가 없음", null));
-        } catch (Exception e) {
-            log.error("Error deleting post with id {}: ", postId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.onFailure("COMMON500", "서버 에러, 관리자에게 문의 바랍니다.", null));
         }
-
     }
+
+    @GetMapping("/my_posts")
+    @ApiOperation("내가 쓴 게시물 리스트 확인")
+    public ApiResponse<List<PostResponseDTO>> getMyPosts(@AuthenticationPrincipal UserDetails userDetails) {
+        String userEmail = userDetails.getUsername(); // JWT로 인증된 사용자의 이메일 가져오기
+        List<Post> posts = postCommandService.checkMyPost(userEmail);
+        List<PostResponseDTO> postResponseDTOS = posts.stream()
+                .map(PostConverter::toPostResponseDTO)
+                .collect(Collectors.toList());
+        log.info("게시글 조회 userId = {}", userEmail);
+        return ApiResponse.onSuccess(postResponseDTOS);
+    }
+
+
+
+    @ApiOperation(value = "글 전체 조회", notes = "post 전체 조회(1. 20개 페이징, 2.최신순 정렬)")
+    @GetMapping("/api/v1/posts")
+    public ApiResponse<List<PostResponseDTO>> getAll(@PageableDefault(size = 20, sort = "title",
+            direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        List<PostResponseDTO> postResponseDTOS = posts.stream()
+                .map(PostConverter::toPostResponseDTO)
+                .collect(Collectors.toList());
+        return ApiResponse.onSuccess(postResponseDTOS);
+    }
+
+
 }
+
+
+
+
+
+
 
 
 
