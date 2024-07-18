@@ -6,6 +6,7 @@ import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.domain.User;
 import journeybuddy.spring.repository.PostRepository;
 import journeybuddy.spring.repository.UserRepository;
+import journeybuddy.spring.web.dto.PostDTO.PostPagingDTO;
 import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,7 @@ public class PostCommandServiceImpl implements PostCommandService {
         Page<Post> posts = postRepository.findAll(pageable);
         //stream을 이용해서 엔티티를 응답객체로 변경
         List<PostResponseDTO> postResponseDTOS = posts.stream()
-                .map(PostResponseDTO::fromEntity)
+                .map(PostConverter::toPostResponseDTO)
                 .collect(Collectors.toList());
         return postResponseDTOS;
     }
@@ -91,7 +92,8 @@ public class PostCommandServiceImpl implements PostCommandService {
         User user = checkUser(userName);
         Page<Post> postsByUser = postRepository.findAllByUser(user, pageable);
         //아래의 map()의 과정은 Page<Post> => Page<PostMineDto> 로 변환과정
-        return postsByUser.map(PostResponseDTO::fromEntity);
+        return postsByUser.map(PostConverter::toPostResponseDTO);
+
     }
 
     private User checkUser(String email) {
@@ -103,6 +105,15 @@ public class PostCommandServiceImpl implements PostCommandService {
                 });
 
         return user;
+    }
+    //////////////////////////////////////////////////////////////////
+    public Page<PostResponseDTO> findAllPost(PostPagingDTO postPagingDTO){
+        Sort sort = Sort.by(Sort.Direction.fromString(postPagingDTO.getSort()), "id");
+        Pageable pageable = PageRequest.of(postPagingDTO.getPage(), postPagingDTO.getSize(), sort);
+
+        Page<Post> postPage = postRepository.findAll(pageable);
+        Page<PostResponseDTO> postResponseDTOS = PostConverter.toDtoList(postPage);
+        return postResponseDTOS;
     }
 }
 

@@ -2,6 +2,7 @@ package journeybuddy.spring.converter;
 import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.web.dto.PostDTO.PostRequestDTO;
 import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 
@@ -31,9 +32,31 @@ public class PostConverter {
                 .id(post.getId())
                 .content(post.getContent())
                 .title(post.getTitle())
+                .userId(post.getUser().getId())
+                .build();
+    }
+
+
+    public static PostResponseDTO fromEntity(Post post) {
+        return PostResponseDTO.builder()
+                .id(post.getId())
+                .title(post.getTitle())
                 .content(post.getContent())
                 .userId(post.getUser().getId())
                 .build();
-
     }
+
+    /* Page<Entity> -> Page<Dto> 변환처리 */
+    public static Page<PostResponseDTO> toDtoList(Page<Post> post){
+        Page<PostResponseDTO> postDtoList =
+                post.map(m -> PostResponseDTO.builder()
+                        .id(m.getId())
+                        .title(m.getTitle())
+                        .content(m.getContent())
+                        .userId(m.getUser().getId())
+                        .build());
+
+        return postDtoList;
+    }
+
 }

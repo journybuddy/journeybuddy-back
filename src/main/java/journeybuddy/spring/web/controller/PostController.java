@@ -6,7 +6,7 @@ import journeybuddy.spring.converter.PostConverter;
 import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.repository.PostRepository;
 import journeybuddy.spring.service.PostService.PostCommandService;
-import journeybuddy.spring.web.dto.CommentDTO.CommentResponse;
+import journeybuddy.spring.web.dto.PostDTO.PostPagingDTO;
 import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +16,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,13 +44,14 @@ public class PostController {
 
     @ApiOperation(value = "글 전체 조회", notes = "post 전체 조회(1. 20개 페이징, 2.최신순 정렬)")
     @GetMapping("/api/v2222/posts")
-    public ApiResponse<PageImpl<PostResponseDTO>> getAll2(@PageableDefault Pageable pageable) {
+    public ApiResponse<PageImpl<PostResponseDTO>> getAll2(@PageableDefault(size = 20, sort ="title",
+            direction = Sort.Direction.DESC) Pageable pageable) {
 
         Logger logger = LoggerFactory.getLogger(PostController.class);
         logger.info("Pageable: page = {}, size = {}, sort = {}", pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         List<PostResponseDTO> posts = postCommandService.getPosts(pageable);
         return ApiResponse.onSuccess(new PageImpl<>(posts));
-    } //
+    }
 
     @GetMapping("/my_posts/paging")
     @ApiOperation("내가 쓴 게시물 리스트 확인")
@@ -65,6 +63,15 @@ public class PostController {
         Page<PostResponseDTO> myPost = postCommandService.getMyPeed(userEmail,pageable);
         return ApiResponse.onSuccess(myPost);
     }
+
+    ///////////////////////////////////////////
+    @GetMapping("/checkAllPaging")
+    @ApiOperation("모든게시글확인")
+    public Page<PostResponseDTO> findAll(@RequestBody PostPagingDTO postPagingDto){
+        return postCommandService.findAllPost(postPagingDto);
+    }
+
+
 
 
 

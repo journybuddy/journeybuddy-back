@@ -63,6 +63,7 @@ public class PostResponseDTO {
     private Long userId;
     private LocalDateTime createdAt;
 
+
     public static PostResponseDTO fromEntity(Post post) {
         return PostResponseDTO.builder()
                 .id(post.getId())

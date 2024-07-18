@@ -2,6 +2,7 @@ package journeybuddy.spring.service.PostService;
 
 import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.domain.User;
+import journeybuddy.spring.web.dto.PostDTO.PostPagingDTO;
 import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,4 +18,5 @@ public interface PostCommandService {
     Post deletePost(Long postId);
     List<PostResponseDTO> getPosts(Pageable pageable);
     Page<PostResponseDTO> getMyPeed(String userName, Pageable pageable);
+    Page<PostResponseDTO> findAllPost(PostPagingDTO postPagingDTO);
 }
