@@ -50,6 +50,11 @@ public class PostCommandServiceImpl implements PostCommandService {
             log.error("포스트가 존재하지 않습니다. postId: {}", postId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+        Post post = optionalPost.get();
+        if (!post.getUser().getEmail().equals(authentication)) {
+            log.error("권한이 없는 사용자가 포스트에 접근하려고 했습니다. postId: {}, username: {}", postId, authentication);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "작성자만 접근할 수 있습니다.");
+        }
         return optionalPost.get();
     }
 
@@ -62,13 +67,19 @@ public class PostCommandServiceImpl implements PostCommandService {
     }
 
     @Override
-    public Post deletePost(Long id) {
-        if (id == null || !postRepository.existsById(id)) {
-            log.error("존재하지 않는 포스트 입니다,Id:{}", id);
+    public Post deletePost(Long postId,String authentication) {
+        Optional<Post> posts = postRepository.findById(postId);
+        if (posts.isEmpty()) {
+            log.error("존재하지 않는 포스트 입니다,Id:{}", postId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        postRepository.deleteById(id);
-        log.info("Deleted post: {}", id);
+        Post post = posts.get();
+        if (!post.getUser().getEmail().equals(authentication)) {
+            log.error("권한이 없는 사용자가 포스트에 접근하려고 했습니다. postId: {}, username: {}", postId, authentication);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "작성자만 접근할 수 있습니다.");
+        }
+        postRepository.deleteById(postId);
+        log.info("Deleted post: {}", postId);
         return null;
     }
 
@@ -89,9 +100,11 @@ public class PostCommandServiceImpl implements PostCommandService {
 
     @Transactional(readOnly = true)
     public Page<PostResponseDTO> getMyPeed(String userName, Pageable pageable) {
-        User user = checkUser(userName);
+        User user = userRepository.findByEmail(userName).orElseThrow(()->{
+            return new UsernameNotFoundException("User not found with email: " + userName);
+        });
+
         Page<Post> postsByUser = postRepository.findAllByUser(user, pageable);
-        //아래의 map()의 과정은 Page<Post> => Page<PostMineDto> 로 변환과정
         return postsByUser.map(PostConverter::toPostResponseDTO);
 
     }

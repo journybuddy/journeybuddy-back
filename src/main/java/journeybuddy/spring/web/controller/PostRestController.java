@@ -63,15 +63,15 @@ public class PostRestController {
     }
 
     //내가 쓴 게시글 상세조회(클릭시)
-    @GetMapping("/mypost/{postId}")
+    @GetMapping("/mypost")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<?> checkMyPostDetail(@PathVariable("postId") Long postId, @AuthenticationPrincipal UserDetails userDetails) {
+    public ApiResponse<?> checkMyPostDetail(@RequestParam Long postId, @AuthenticationPrincipal UserDetails userDetails) {
         if (postId != null) {
             Post detailPost = postCommandService.checkPostDetail(postId, userDetails.getUsername());
             PostResponseDTO detailDTO = PostConverter.toPostResponseDTO(detailPost);
             return ApiResponse.onSuccess(detailDTO);
         } else {
-            log.error("포스트 조회 중 에러 발생: ");
+            log.error("없는포스트");
             return ApiResponse.onFailure("COMMON404", "존재하지 않는포스트.", null);
         }
     }
@@ -79,9 +79,9 @@ public class PostRestController {
     //게시글 삭제
     @DeleteMapping("/delete/{postId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId, @AuthenticationPrincipal Authentication authentication) {
+    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId, @AuthenticationPrincipal  UserDetails userDetails) {
         if (postId != null) {
-            postCommandService.deletePost(postId);
+            postCommandService.deletePost(postId,userDetails.getUsername());
             log.info("Post with id {} deleted successfully", postId);
             return ResponseEntity.ok(ApiResponse.onSuccess(null));
         } else {
@@ -89,6 +89,7 @@ public class PostRestController {
         }
     }
 
+    //페이징 처리 안되어있음
     @GetMapping("/my_posts")
     @ApiOperation("내가 쓴 게시물 리스트 확인")
     public ApiResponse<List<PostResponseDTO>> getMyPosts(@AuthenticationPrincipal UserDetails userDetails) {
@@ -101,17 +102,16 @@ public class PostRestController {
         return ApiResponse.onSuccess(postResponseDTOS);
     }
 
-
-
-    @ApiOperation(value = "글 전체 조회", notes = "post 전체 조회(1. 20개 페이징, 2.최신순 정렬)")
-    @GetMapping("/api/v1/posts")
-    public ApiResponse<List<PostResponseDTO>> getAll(@PageableDefault(size = 20, sort = "title",
-            direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<Post> posts = postRepository.findAll(pageable);
-        List<PostResponseDTO> postResponseDTOS = posts.stream()
-                .map(PostConverter::toPostResponseDTO)
-                .collect(Collectors.toList());
-        return ApiResponse.onSuccess(postResponseDTOS);
+    //페이징 처리 되어있음
+    @GetMapping("/my_posts/paging")
+    @ApiOperation("내가 쓴 게시물 리스트 확인")
+    public ApiResponse<Page<PostResponseDTO>> getMyPostsPage(@PageableDefault(size = 20, sort ="registeredAt",
+            direction = Sort.Direction.DESC) Pageable pageable,
+                                                             @AuthenticationPrincipal UserDetails userDetails) {
+        String userEmail = userDetails.getUsername(); // JWT로 인증된 사용자의 이메일 가져오기
+        log.info("게시글 조회 userId = {}", userEmail);
+        Page<PostResponseDTO> myPost = postCommandService.getMyPeed(userEmail,pageable);
+        return ApiResponse.onSuccess(myPost);
     }
 
 

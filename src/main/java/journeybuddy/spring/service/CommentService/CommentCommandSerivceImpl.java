@@ -53,7 +53,9 @@ public class CommentCommandSerivceImpl implements CommentCommandService{
 
 
     public Page<CommentResponseDTO> checkMyComment(String userEmail, Pageable pageable) {
-        User user = checkUser(userEmail); // 사용자 객체 조회
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()->{
+            return new UsernameNotFoundException("User not found with email: " + userEmail);
+        });
         Page<Comment> commentsByUser = commentRepository.findAllByUser(user, pageable); // 사용자 객체를 인자로 전달
         return commentsByUser.map(CommentConverter::toCommentResponseDTO);
     }

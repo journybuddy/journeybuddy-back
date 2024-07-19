@@ -1,5 +1,20 @@
-package journeybuddy.spring.web.controller;
 
+
+import io.swagger.annotations.ApiOperation;
+import journeybuddy.spring.web.dto.PostDTO.PostPagingDTO;
+import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import io.swagger.annotations.ApiOperation;
+import journeybuddy.spring.web.dto.PostDTO.PostPagingDTO;
+import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import io.swagger.annotations.ApiOperation;
+import journeybuddy.spring.web.dto.PostDTO.PostPagingDTO;
+import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
 import io.swagger.annotations.ApiOperation;
 import journeybuddy.spring.apiPayload.ApiResponse;
 import journeybuddy.spring.converter.PostConverter;
@@ -20,7 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+/*
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -52,7 +67,7 @@ public class PostController {
         List<PostResponseDTO> posts = postCommandService.getPosts(pageable);
         return ApiResponse.onSuccess(new PageImpl<>(posts));
     }
-
+/*
     @GetMapping("/my_posts/paging")
     @ApiOperation("내가 쓴 게시물 리스트 확인")
     public ApiResponse<Page<PostResponseDTO>> getMyPostsPage(@PageableDefault(size = 20, sort ="registeredAt",
@@ -64,7 +79,6 @@ public class PostController {
         return ApiResponse.onSuccess(myPost);
     }
 
-    ///////////////////////////////////////////
     @GetMapping("/checkAllPaging")
     @ApiOperation("모든게시글확인")
     public Page<PostResponseDTO> findAll(@RequestBody PostPagingDTO postPagingDto){
@@ -76,3 +90,4 @@ public class PostController {
 
 
 }
+*/
