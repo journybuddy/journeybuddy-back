@@ -1,42 +1,26 @@
 package journeybuddy.spring.web.controller;
 
-import io.swagger.annotations.Api;
+
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.OAuth2Definition;
 import journeybuddy.spring.apiPayload.ApiResponse;
-import journeybuddy.spring.apiPayload.exception.handler.TempHandler;
-import journeybuddy.spring.config.JWT.SecurityUtil;
-import journeybuddy.spring.config.JWT.SecurityUtils;
 import journeybuddy.spring.converter.PostConverter;
-import journeybuddy.spring.converter.UserUpdateConverter;
 import journeybuddy.spring.domain.Post;
-import journeybuddy.spring.domain.User;
 import journeybuddy.spring.repository.PostRepository;
-import journeybuddy.spring.repository.UserRepository;
 import journeybuddy.spring.service.PostService.PostCommandService;
 import journeybuddy.spring.web.dto.PostDTO.PostRequestDTO;
 import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
-import journeybuddy.spring.web.dto.UserDTO.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 //게시글 조회기능 컨트롤러
@@ -52,6 +36,7 @@ public class PostRestController {
     //게시글 저장
     @PostMapping("/save")
     @PreAuthorize("isAuthenticated()")
+    @ApiOperation("게시글 저장")
     public ApiResponse<PostRequestDTO> savePost(@RequestBody PostRequestDTO requestDTO,
                                                 Authentication authentication) {
         Post savedPost = PostConverter.toPost(requestDTO);
@@ -63,8 +48,9 @@ public class PostRestController {
     }
 
     //내가 쓴 게시글 상세조회(클릭시)
-    @GetMapping("/mypost")
+    @GetMapping("/my_post/detail")
     @PreAuthorize("isAuthenticated()")
+    @ApiOperation(value = "게시글 상세보기(클릭시)")
     public ApiResponse<?> checkMyPostDetail(@RequestParam Long postId, @AuthenticationPrincipal UserDetails userDetails) {
         if (postId != null) {
             Post detailPost = postCommandService.checkPostDetail(postId, userDetails.getUsername());
@@ -79,14 +65,16 @@ public class PostRestController {
     //게시글 삭제
     @DeleteMapping("/delete/{postId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId, @AuthenticationPrincipal  UserDetails userDetails) {
+    @ApiOperation(value = "게시글 삭제", notes = "주어진 ID의 게시글을 삭제합니다.")
+    public ApiResponse<?> deletePost(@PathVariable("postId") Long postId, @AuthenticationPrincipal  UserDetails userDetails) {
         if (postId != null) {
             postCommandService.deletePost(postId,userDetails.getUsername());
             log.info("Post with id {} deleted successfully", postId);
-            return ResponseEntity.ok(ApiResponse.onSuccess(null));
+            return ApiResponse.onSuccess(null);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.onFailure("COMMON404", "사용자 정보가 없음", null));
+            ApiResponse.onFailure("COMMON404", "사용자 정보가 없음", null);
         }
+        return null;
     }
 
     //페이징 처리 안되어있음
@@ -112,6 +100,13 @@ public class PostRestController {
         log.info("게시글 조회 userId = {}", userEmail);
         Page<PostResponseDTO> myPost = postCommandService.getMyPeed(userEmail,pageable);
         return ApiResponse.onSuccess(myPost);
+    }
+
+    @ApiOperation(value = "모든포스트페이징")
+    @GetMapping("/checkAllPost")
+    public ApiResponse<Page<PostResponseDTO>> getPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        return ApiResponse.onSuccess(PostConverter.toDtoList(posts));
     }
 
 

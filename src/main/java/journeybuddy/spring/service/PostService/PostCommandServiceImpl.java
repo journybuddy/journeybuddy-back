@@ -1,19 +1,15 @@
 package journeybuddy.spring.service.PostService;
 
-import jdk.jshell.spi.ExecutionControl;
 import journeybuddy.spring.converter.PostConverter;
 import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.domain.User;
 import journeybuddy.spring.repository.PostRepository;
 import journeybuddy.spring.repository.UserRepository;
-import journeybuddy.spring.web.dto.PostDTO.PostPagingDTO;
 import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -119,15 +115,7 @@ public class PostCommandServiceImpl implements PostCommandService {
 
         return user;
     }
-    //////////////////////////////////////////////////////////////////
-    public Page<PostResponseDTO> findAllPost(PostPagingDTO postPagingDTO){
-        Sort sort = Sort.by(Sort.Direction.fromString(postPagingDTO.getSort()), "id");
-        Pageable pageable = PageRequest.of(postPagingDTO.getPage(), postPagingDTO.getSize(), sort);
 
-        Page<Post> postPage = postRepository.findAll(pageable);
-        Page<PostResponseDTO> postResponseDTOS = PostConverter.toDtoList(postPage);
-        return postResponseDTOS;
-    }
 }
 
 

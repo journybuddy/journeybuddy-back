@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,7 +42,8 @@ public class ScrapRestController {
 
     @GetMapping("/myScrap")
     public ApiResponse<Page<ScrapResponseDTO>> getMyScrap(@AuthenticationPrincipal UserDetails userDetails,
-                                               @PageableDefault Pageable pageable) {
+                                               @PageableDefault(size = 20, sort ="registeredAt",
+                                                       direction = Sort.Direction.DESC) Pageable pageable) {
         String userEmail = userDetails.getUsername();
         Page<ScrapResponseDTO> scrapPage = scrapCommandService.findAll(userEmail,pageable);
         return ApiResponse.onSuccess(scrapPage);

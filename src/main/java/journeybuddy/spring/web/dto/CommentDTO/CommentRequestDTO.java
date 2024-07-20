@@ -13,5 +13,5 @@ import lombok.ToString;
 public class CommentRequestDTO {
     private Long id; //commentId
     private String comment; //내용
-    private Long userId; //댓글단 사용자
+//    private Long userId; //댓글단 사용자
 }

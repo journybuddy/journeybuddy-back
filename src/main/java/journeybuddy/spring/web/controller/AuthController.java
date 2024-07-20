@@ -27,7 +27,7 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @PostMapping("/authenticate")
-    public ResponseEntity<TokenDTO> authorize(@Valid @RequestBody UserRequestDTO.UpdateDTO request){
+    public ResponseEntity<TokenDTO> authorize(@Valid @RequestBody UserRequestDTO.RegisterDTO request){
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());

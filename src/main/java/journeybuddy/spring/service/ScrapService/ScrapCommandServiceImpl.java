@@ -1,18 +1,13 @@
 package journeybuddy.spring.service.ScrapService;
 
-import journeybuddy.spring.converter.CommentConverter;
-import journeybuddy.spring.converter.PostConverter;
 import journeybuddy.spring.converter.ScrapConverter;
-import journeybuddy.spring.domain.Comment;
 import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.domain.User;
 import journeybuddy.spring.domain.mapping.Scrap;
 import journeybuddy.spring.repository.PostRepository;
 import journeybuddy.spring.repository.ScrapRepository;
 import journeybuddy.spring.repository.UserRepository;
-import journeybuddy.spring.web.dto.ScrapDTO.ScrapRequestDTO;
 import journeybuddy.spring.web.dto.ScrapDTO.ScrapResponseDTO;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

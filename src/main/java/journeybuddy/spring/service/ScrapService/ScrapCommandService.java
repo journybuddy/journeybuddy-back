@@ -1,6 +1,5 @@
 package journeybuddy.spring.service.ScrapService;
 
-import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.domain.mapping.Scrap;
 import journeybuddy.spring.web.dto.ScrapDTO.ScrapResponseDTO;
 import org.springframework.data.domain.Page;

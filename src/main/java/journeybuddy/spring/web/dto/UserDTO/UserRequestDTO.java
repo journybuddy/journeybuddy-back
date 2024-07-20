@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import journeybuddy.spring.domain.common.BaseEntity;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 
 public class UserRequestDTO {
 
@@ -12,16 +14,28 @@ public class UserRequestDTO {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UpdateDTO extends BaseEntity{
-//        Long id;
+    public static class UpdateDTO {
+        String bio;
+//        String email;
+        String nickname;
+//        String password;
+        LocalDateTime updatedAt;
+
+
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RegisterDTO{
+ //       Long id;
         String bio;
         String email;
         String nickname;
         String password;
 //        LocalDateTime createdAt;
 //        LocalDateTime updatedAt;
-
-
     }
 
     @Getter
@@ -32,6 +46,16 @@ public class UserRequestDTO {
         @Email
         @NotBlank
         private String email;
+
+        @NotBlank
+        private String password;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PasswordDTO {
 
         @NotBlank
         private String password;

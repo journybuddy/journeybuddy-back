@@ -29,15 +29,4 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    /*
-    //dto - > entity로 바꾸는 메서드
-    public static Comment of(User user, Post post, String comment) {
-        Comment entity = Comment.builder()
-                .user(user)
-                .post(post)
-                .comment(comment)
-                .build();
-        return entity;
-    }
-*/
 }

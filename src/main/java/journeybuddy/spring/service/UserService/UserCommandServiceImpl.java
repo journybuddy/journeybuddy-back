@@ -28,7 +28,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final RoleRepository roleRepository;
 
     @Override
-    public User addUser(UserRequestDTO.UpdateDTO request) {
+    public User addUser(UserRequestDTO.RegisterDTO request) {
 
         User addUser = UserUpdateConverter.toUser(request,bCryptPasswordEncoder);
 
@@ -47,24 +47,13 @@ public class UserCommandServiceImpl implements UserCommandService {
 
 
     @Override
-    public User updateUser(UserRequestDTO.UpdateDTO request) {
+    public User updateUser(UserRequestDTO.UpdateDTO request,String userEmail) {
 
-        User existingUser = userRepository.findByEmail(request.getEmail())
+        User existingUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        if (!request.getEmail().equals(existingUser.getEmail())) {
-            throw new RuntimeException("사용자 인증 정보가 일치하지 않습니다.");
-        }
-
-        /* 이메일 바꾸기 어떻게 할건지 정하기. 현재 수정기능은 이메일과 비밀번호 인증해야 가능함
-        if (userRepository.existsByEmail(request.getEmail()) && !request.getEmail().equals(existingUser.getEmail())) {
-            log.error("이미 존재하는 이메일");
-            throw new TempHandler(ErrorStatus._BAD_REQUEST);
-        }
-        */
 
         existingUser.setNickname(request.getNickname());
-        existingUser.setEmail(request.getEmail());
         existingUser.setBio(request.getBio());
         existingUser.setUpdatedAt(request.getUpdatedAt());
 
@@ -88,7 +77,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
-    public Long loginCheck(UserRequestDTO.UpdateDTO request) {
+    public Long loginCheck(UserRequestDTO.RegisterDTO request) {
         User loginUser = userRepository.findByEmail(request.getEmail()).orElse(null);
         if (loginUser != null &&  bCryptPasswordEncoder.matches(request.getPassword(), loginUser.getPassword())) {
             log.info("로그인한 유저:" + loginUser.getId());
@@ -98,7 +87,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
-    public boolean EmailDuplicationCheck(UserRequestDTO.UpdateDTO request) {
+    public boolean EmailDuplicationCheck(UserRequestDTO.RegisterDTO request) {
         return userRepository.findByEmail(request.getEmail()).isPresent();
     }
 

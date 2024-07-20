@@ -1,7 +1,6 @@
 package journeybuddy.spring.service.CommentService;
 
 import journeybuddy.spring.converter.CommentConverter;
-import journeybuddy.spring.converter.PostConverter;
 import journeybuddy.spring.domain.Comment;
 import journeybuddy.spring.domain.Post;
 import journeybuddy.spring.domain.User;
@@ -9,19 +8,12 @@ import journeybuddy.spring.repository.CommentRepository;
 import journeybuddy.spring.repository.PostRepository;
 import journeybuddy.spring.repository.UserRepository;
 import journeybuddy.spring.web.dto.CommentDTO.CommentResponseDTO;
-import journeybuddy.spring.web.dto.PostDTO.PostResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service

@@ -6,12 +6,12 @@ import journeybuddy.spring.web.dto.UserDTO.UserRequestDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public interface UserCommandService {
-    User updateUser(UserRequestDTO.UpdateDTO request);
-    User addUser(UserRequestDTO.UpdateDTO request);
+    public User updateUser(UserRequestDTO.UpdateDTO request,String userEmail);
+    public User addUser(UserRequestDTO.RegisterDTO request);
     User getUserById(Long id);
     User deletedById(Long id);
-    public Long loginCheck(UserRequestDTO.UpdateDTO request);
-    public boolean EmailDuplicationCheck(UserRequestDTO.UpdateDTO request);
+    public Long loginCheck(UserRequestDTO.RegisterDTO request);
+    public boolean EmailDuplicationCheck(UserRequestDTO.RegisterDTO request);
     String getUserEmailById(Long id);
     User getUserByEmail(String userEmail);
 }

@@ -47,16 +47,18 @@ public class PostConverter {
     }
 
     /* Page<Entity> -> Page<Dto> 변환처리 */
-    public static Page<PostResponseDTO> toDtoList(Page<Post> post){
-        Page<PostResponseDTO> postDtoList =
-                post.map(m -> PostResponseDTO.builder()
-                        .id(m.getId())
-                        .title(m.getTitle())
-                        .content(m.getContent())
-                        .userId(m.getUser().getId())
-                        .build());
+    public static Page<PostResponseDTO> toDtoList(Page<Post> posts) {
+        return posts.map(post -> {
+            //null확인안하면 exception발생
+            Long userId = (post.getUser() != null) ? post.getUser().getId() : null;
 
-        return postDtoList;
+            return PostResponseDTO.builder()
+                    .id(post.getId())
+                    .title(post.getTitle())
+                    .content(post.getContent())
+                    .userId(userId)
+                    .build();
+        });
     }
 
 }

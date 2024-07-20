@@ -13,15 +13,15 @@ public class ScrapConverter {
 
     public static Scrap toScrap(ScrapRequestDTO scrapRequestDTO){
         return Scrap.builder()
-                .id(scrapRequestDTO.getId())
+        //        .id(scrapRequestDTO.getId())
                 .build();
     }
 
     public static ScrapRequestDTO toScrapRequesetDTO(Scrap scrap) {
         return ScrapRequestDTO.builder()
-                .id(scrap.getId())
+        //        .id(scrap.getId())
                 .postId(scrap.getPost().getId())
-                .userId(scrap.getUser().getId())
+        //        .userId(scrap.getUser().getId())
                 .build();
     }
 
