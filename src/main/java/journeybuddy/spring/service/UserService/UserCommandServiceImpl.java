@@ -30,19 +30,27 @@ public class UserCommandServiceImpl implements UserCommandService {
     @Override
     public User addUser(UserRequestDTO.RegisterDTO request) {
 
-        User addUser = UserUpdateConverter.toUser(request,bCryptPasswordEncoder);
+        User addUser = UserUpdateConverter.toUser(request, bCryptPasswordEncoder);
 
+        // 기본 역할을 가져오기
         Role defaultRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new RuntimeException("Default role not found"));
+                .orElse(null); // 기본 역할이 없을 경우 null 반환
 
-        addUser.setRoles(Collections.singletonList(defaultRole));
-        if(!userRepository.existsByEmail(request.getEmail())){
-            return userRepository.save(addUser);
-
-        }else{
-            log.error("이미 존재하는 이메일입니다.");
-            throw new RuntimeException();
+        // 기본 역할이 존재하면 사용자에게 설정, 없으면 빈 역할 목록 설정
+        if (defaultRole != null) {
+            addUser.setRoles(Collections.singletonList(defaultRole));
+        } else {
+            addUser.setRoles(Collections.emptyList()); // 역할 없이도 사용자 추가 가능
         }
+
+        // 이메일이 이미 존재하는지 확인
+        if (userRepository.existsByEmail(request.getEmail())) {
+            log.error("이미 존재하는 이메일입니다.");
+            throw new RuntimeException("이미 존재하는 이메일입니다.");
+        }
+
+        // 사용자 저장
+        return userRepository.save(addUser);
     }
 
 
