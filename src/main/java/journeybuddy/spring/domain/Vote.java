@@ -2,7 +2,6 @@ package journeybuddy.spring.domain;
 
 import jakarta.persistence.*;
 import journeybuddy.spring.domain.common.BaseEntity;
-import journeybuddy.spring.domain.mapping.Place;
 import lombok.*;
 
 @Entity
@@ -24,8 +23,11 @@ public class Vote extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
+/*
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     private Place place;
+
+
+ */
 }

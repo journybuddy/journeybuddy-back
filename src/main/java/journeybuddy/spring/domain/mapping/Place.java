@@ -1,6 +1,6 @@
 package journeybuddy.spring.domain.mapping;
 
-
+/*
 import jakarta.persistence.*;
 import journeybuddy.spring.domain.Comment;
 import journeybuddy.spring.domain.Schedule;
@@ -30,3 +30,4 @@ public class Place { //원하는 장소 직접입력
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 }
+*/

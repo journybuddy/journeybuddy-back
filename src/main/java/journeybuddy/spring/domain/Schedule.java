@@ -1,6 +1,5 @@
 package journeybuddy.spring.domain;
-
-
+/*
 import jakarta.persistence.*;
 import journeybuddy.spring.domain.mapping.Place;
 import lombok.*;
@@ -26,3 +25,4 @@ public class Schedule {
     private List<Place> placeList = new ArrayList<>();
 
 }
+*/

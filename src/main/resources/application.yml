@@ -3,7 +3,7 @@ spring:
     expiration_time: 86400000 #1일
     secretkey: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
   datasource:
-  url: jdbc:mysql://database-jb.czeam6yogwym.us-east-2.rds.amazonaws.com:3306/test?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+  url: jdbc:mysql://database-jb.czeam6yogwym.us-east-2.rds.amazonaws.com:3306/journeybuddy?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
   username: admin
   password: jbhanium2024
   driver-class-name: com.mysql.cj.jdbc.Driver

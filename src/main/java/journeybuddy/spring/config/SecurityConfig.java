@@ -1,6 +1,8 @@
 package journeybuddy.spring.config;
 
 import journeybuddy.spring.config.JWT.*;
+import journeybuddy.spring.config.OAuth2.CustomOAuth2UserService;
+import journeybuddy.spring.config.OAuth2.OAuth2SuccessHandler;
 import journeybuddy.spring.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +15,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,8 +25,13 @@ import org.springframework.security.web.context.DelegatingSecurityContextReposit
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 
 @EnableWebSecurity
@@ -34,6 +42,7 @@ public class SecurityConfig{
 
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
+    private final CustomOAuth2UserService oAuth2UserService;
 
 
     @Value("${spring.jwt.secretkey}")
@@ -75,7 +84,14 @@ public class SecurityConfig{
         );
     }
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
+        return web -> web.ignoring()
+                .requestMatchers("/error", "/favicon.ico");
+    }
+
     //다른 도메인에서 리소스에 접근할 수 있도록 웹 어플리케이션간의 리소스 공유를 허용하는 메커니즘
+    /*
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -88,12 +104,29 @@ public class SecurityConfig{
         return new CorsFilter(source);
     }
 
+     */
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // React 앱의 URL
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         JwtUtil jwtUtil = new JwtUtil(secretKey, customUserDetailsService, accessTokenExpTime);
         http
 
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/swagger-ui/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/login/*").permitAll()
@@ -102,10 +135,9 @@ public class SecurityConfig{
                         //        .requestMatchers("/user/**").permitAll()
                         .requestMatchers("/", "/user/login", "/user/register").permitAll()
                         .requestMatchers("/", "/api*", "/api-docs/**", "/swagger-ui/**","/v3/**").permitAll()
-                                .anyRequest().permitAll()
+                       .anyRequest().permitAll()
                         //        .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception->exception
                                 .accessDeniedHandler(new JwtAccessDeniedHandler())
                                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
@@ -114,13 +146,17 @@ public class SecurityConfig{
         //            securityContext.securityContextRepository(delegatingSecurityContextRepository());
                     securityContext.requireExplicitSave(true);
                 })
-                .logout(logout -> logout
-                        .logoutUrl("/logout").permitAll()
-                        .logoutSuccessUrl("/").permitAll()
-                        .invalidateHttpSession(true)
-                        .permitAll()
+                .oauth2Login(oauth2Login -> oauth2Login
+                //        .loginPage("/login")
+                        .successHandler(new OAuth2SuccessHandler(jwtUtil))
+                //        .defaultSuccessUrl("/login/success")
+                        .failureUrl("/login?error=true")
+                        .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
+                                .userService(oAuth2UserService)
+                        )
+                )
+                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-                );
         return http.build();
     }
 }

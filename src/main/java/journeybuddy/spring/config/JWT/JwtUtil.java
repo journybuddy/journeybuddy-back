@@ -74,6 +74,15 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateOAuthToken(Map<String, Object> claims) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpTime))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
     public Authentication getAuthentication(String token) {
         String userEmail = extractUserEmail(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);

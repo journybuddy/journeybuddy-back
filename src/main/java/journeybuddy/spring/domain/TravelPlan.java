@@ -1,5 +1,5 @@
 package journeybuddy.spring.domain;
-
+/*
 
 import jakarta.persistence.*;
 import journeybuddy.spring.domain.common.BaseEntity;
@@ -47,3 +47,4 @@ public class TravelPlan extends BaseEntity {
 
 
 }
+*/

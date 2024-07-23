@@ -45,10 +45,13 @@ public class User extends BaseEntity{
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Comment> commentList = new ArrayList<>();
 
+    /*
     @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<TravelPlan> planList = new ArrayList<>();
+    */
+
 
     @JsonIgnore
     @Builder.Default
