@@ -69,7 +69,16 @@ public class JwtUtil {
 
 
     //oauth2발급받는 토큰
-    public String generateOAuthToken(Map<String, Object> claims) {
+    public String generateOAuth2Token(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpTime))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String generateToken2(Map<String, Object> claims) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -77,6 +86,7 @@ public class JwtUtil {
                 .signWith(secretKey)
                 .compact();
     }
+
 
     //일반로그인 발급 토큰
     public String generateToken(Map<String, Object> claims, User user) {
@@ -95,7 +105,6 @@ public class JwtUtil {
         User user = customUserDetails.getUser();
         return generateToken(Collections.emptyMap(), user);
     }
-
 
     //토큰인증
     public Authentication getAuthentication(String token) {

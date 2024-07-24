@@ -37,7 +37,6 @@ public class UserLikeCommandServiceImpl implements UserLikeCommandService {
     }
 
     //내가 누른 좋아요 확인
-
     public Page<UserLikeResponesDTO> findMyLike(String userEmail,Pageable pageable){
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -46,7 +45,4 @@ public class UserLikeCommandServiceImpl implements UserLikeCommandService {
 
 
     }
-
-
-
 }

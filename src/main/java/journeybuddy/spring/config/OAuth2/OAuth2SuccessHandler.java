@@ -55,7 +55,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         );
 
         log.info("토큰 발행 시작");
-        String token = jwtUtil.generateOAuthToken(claims);
+        String token = jwtUtil.generateToken2(claims);
         log.info("{}", token);
 
         response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);

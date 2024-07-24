@@ -1,9 +1,12 @@
 package journeybuddy.spring.web.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import journeybuddy.spring.config.JWT.CustomUserDetails;
 import journeybuddy.spring.config.JWT.JwtFilter;
 import journeybuddy.spring.config.JWT.JwtUtil;
+import journeybuddy.spring.config.OAuth2.KaKaoService;
+import journeybuddy.spring.domain.User;
 import journeybuddy.spring.web.dto.UserDTO.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,29 +36,36 @@ public class KaKaoRestController {
 
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
+    private final KaKaoService kakaoService;
 
 
     //백엔드에서 인가코드 확인용코드 임시 url, getmapping에 리다이렉트코드 입력해야함
-    @GetMapping(value = "login/access")
-    public ResponseEntity<TokenDTO> oauth2Authenticate(HttpServletRequest request) {
-        // OAuth2 인증이 완료되었을 때, SecurityContextHolder에 저장된 Authentication 객체를 가져옵니다.
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 인증된 사용자가 없는 경우, 401 Unauthorized를 반환합니다.
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new TokenDTO("Error: Unauthorized"));
-        }
+    @RequestMapping(value = "/kakao")
+    public ResponseEntity<String> kakaoLogin(@RequestParam("code") String code, HttpSession session) throws Exception {
+        String accessToken = kakaoService.getToken(code);
+        User userInfo = kakaoService.getUserInfo(accessToken);
 
-        // JWT 토큰을 생성합니다.
-        String jwt = jwtUtil.createAccessToken(authentication);
+        // JWT 토큰 생성
+        String jwtToken = jwtUtil.generateOAuth2Token(userInfo.getEmail());
 
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-
-        // TokenDTO를 이용해 response body에 JWT를 넣어서 반환합니다.
-        return new ResponseEntity<>(new TokenDTO(jwt), httpHeaders, HttpStatus.OK);
+        return ResponseEntity.ok(jwtToken); // JWT 토큰을 반환
     }
+
+
+    @RequestMapping("/kakao/info")
+    public ResponseEntity<User> kakaoLogin(@RequestParam("code") String code) throws Exception {
+
+        // code로 토큰 받음
+        String accessToken = kakaoService.getToken(code);
+
+        // 토큰으로 사용자 정보 가져오기
+        User user = kakaoService.getUserInfo(accessToken);
+
+        // User 객체를 JSON 응답으로 반환
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
 }
 /*
     @GetMapping("/user-info")
