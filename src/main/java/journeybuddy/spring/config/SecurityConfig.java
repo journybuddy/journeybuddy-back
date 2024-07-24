@@ -42,7 +42,7 @@ public class SecurityConfig{
 
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
-    private final CustomOAuth2UserService oAuth2UserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
 
     @Value("${spring.jwt.secretkey}")
@@ -50,7 +50,6 @@ public class SecurityConfig{
 
     @Value("${spring.jwt.expiration_time}")
     private long accessTokenExpTime;
-
 
 
     @Bean
@@ -143,17 +142,14 @@ public class SecurityConfig{
                                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                 )
                 .securityContext((securityContext) -> {
-        //            securityContext.securityContextRepository(delegatingSecurityContextRepository());
                     securityContext.requireExplicitSave(true);
                 })
                 .oauth2Login(oauth2Login -> oauth2Login
-                //        .loginPage("/login")
-                        .successHandler(new OAuth2SuccessHandler(jwtUtil))
-                //        .defaultSuccessUrl("/login/success")
                         .failureUrl("/login?error=true")
                         .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
-                                .userService(oAuth2UserService)
+                                .userService(customOAuth2UserService)
                         )
+                                .successHandler(new OAuth2SuccessHandler(jwtUtil))
                 )
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 

@@ -9,11 +9,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -35,80 +33,50 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
 
+    //DB에서 찾아오는 메소드
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oAuth2User = super.loadUser(userRequest);
+        try {
+            log.info("loadUser method called");
+            OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        // registrationId 카카오에서 가져오기
-        String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        log.info("registrationId: {}", registrationId);
+            // registrationId 카카오에서 가져오기
+            String registrationId = userRequest.getClientRegistration().getRegistrationId();
+            log.info("registrationId: {}", registrationId);
 
-        // userNameAttributeName 가져오기
-        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
-                .getUserInfoEndpoint().getUserNameAttributeName();
-        log.info("userNameAttributeName: " + userNameAttributeName);
+            // 사용자 정보
+            OAuth2UserAttribute oAuth2UserAttribute = OAuth2UserAttribute.of(registrationId, oAuth2User.getAttributes());
+            log.info("getAttributes(): {}", oAuth2User.getAttributes());
 
-        // 유저 정보 DTO 생성
-        OAuth2UserAttribute oAuth2UserAttribute = OAuth2UserAttribute.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
-        log.info("getAttributes(): " + oAuth2User.getAttributes());
+            // 회원가입 및 로그인
+            User user = getOrSave(oAuth2UserAttribute);
 
-        // 회원가입 및 로그인
-        User user = getOrSave(oAuth2UserAttribute);
+            // CustomUserDetails 객체 생성
+            CustomUserDetails customUserDetails = new CustomUserDetails(user, oAuth2User.getAttributes());
 
-        //principalDetails반환시
-        //return new PrincipalDetails(user, oAuth2User.getAttributes());
+            // SecurityContext에 CustomUserDetails 설정
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    customUserDetails,
+                    null,
+                    customUserDetails.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // DefaultOAuth2User 반환
-        return new CustomUserDetails(
-                user,
-                oAuth2User.getAttributes(), // 사용자 속성
-                userNameAttributeName // 사용자 이름 속성
-        );
+            return customUserDetails;
+
+        } catch (Exception e) {
+            log.error("Error in loadUser: ", e);
+            throw new OAuth2AuthenticationException("Error occurred while loading user");
+        }
     }
 
     private User getOrSave(OAuth2UserAttribute oAuth2UserAttribute) {
         // 이메일로 사용자 찾기
-        User user = userRepository.findByEmail(oAuth2UserAttribute.getEmail())
+        return userRepository.findByEmail(oAuth2UserAttribute.getEmail())
                 .orElseGet(() -> userRepository.save(oAuth2UserAttribute.toEntity()));
-        return user;
-    }
-
-}
-
-
-    /* 이건 내가 직접 access 토큰 받아서 구하는 방법
-    private final UserRepository userRepository;
-    private final RestTemplate restTemplate;
-    private final String kakaoUserInfoEndpoint = "https://kapi.kakao.com/v2/user/me"; // 카카오 사용자 정보 조회 URL
-    private final String kakaoTokenHeader = "Bearer ";
-
-    public OAuth2User loadUserByToken(String accessToken) {
-        // 카카오 사용자 정보 조회
-        String url = kakaoUserInfoEndpoint;
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", kakaoTokenHeader + accessToken);
-        HttpEntity<String> request = new HttpEntity<>(headers);
-
-        ResponseEntity<Map> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Map.class);
-        Map<String, Object> attributes = responseEntity.getBody();
-
-        if (attributes == null) {
-            throw new RuntimeException("Failed to fetch user details from Kakao");
-        }
-
-        // 카카오 사용자 정보 변환
-        OAuth2UserAttribute oAuth2UserAttribute = OAuth2UserAttribute.of("kakao", "id", attributes);
-
-        // 사용자 정보를 OAuth2User로 변환
-        return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                oAuth2UserAttribute.toMap(),
-                "id" // 사용자 이름 속성
-        );
     }
 }
-*/
+
 
 
 

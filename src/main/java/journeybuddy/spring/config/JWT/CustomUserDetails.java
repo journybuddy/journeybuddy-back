@@ -1,5 +1,6 @@
 package journeybuddy.spring.config.JWT;
 
+import journeybuddy.spring.config.OAuth2.OAuth2UserAttribute;
 import journeybuddy.spring.domain.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,23 +17,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CustomUserDetails implements UserDetails, OAuth2User {
 
-
     private final User user;
-    private Map<String, Object> attributes;
-    private final String userNameAttributeName;
+    private final Map<String, Object> attributes;
 
     // UserDetails 생성자
     public CustomUserDetails(User user) {
         this.user = user;
-        this.attributes = Collections.emptyMap(); // 기본값으로 빈 맵
-        this.userNameAttributeName = "id"; // 기본값
+        this.attributes = null;
     }
 
     // OAuth2User 생성자
-    public CustomUserDetails(User user, Map<String, Object> attributes, String userNameAttributeName) {
+    public CustomUserDetails(User user, Map<String, Object> attributes) {
         this.user = user;
         this.attributes = attributes;
-        this.userNameAttributeName = userNameAttributeName;
     }
 
     public User getUser() {
@@ -81,9 +78,16 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
         return true;
     }
 
+
     @Override
     public String getName() {
-        // userNameAttributeName을 통해 사용자 이름을 가져옴
-        return attributes.getOrDefault(userNameAttributeName, "").toString();
+        // attributes에서 'nickname'을 반환
+        return attributes != null ? (String) ((Map<String, Object>) attributes.get("profile")).get("nickname") : null;
     }
+
+    public String getEmail() {
+        // attributes에서 'email'을 반환
+        return attributes != null ? (String) ((Map<String, Object>) attributes.get("kakao_account")).get("email") : null;
+    }
+
 }

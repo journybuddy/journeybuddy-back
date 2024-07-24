@@ -3,6 +3,7 @@ package journeybuddy.spring.config.OAuth2;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import journeybuddy.spring.config.JWT.CustomUserDetails;
 import journeybuddy.spring.config.JWT.JwtUtil;
 import journeybuddy.spring.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -30,21 +31,22 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtUtil jwtUtil;
 
-
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
         log.info("OAuth2 authentication successful");
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        CustomUserDetails customUserDetail = (CustomUserDetails) authentication.getPrincipal();
 
-        log.info("Principal에서 꺼낸 OAuth2User = {}", oAuth2User);
+        log.info("Principal에서 꺼낸 OAuth2User = {}", customUserDetail);
+
 
         // 카카오 계정 정보 추출
         Map<String, Object> kakaoAccount = (Map<String, Object>) oAuth2User.getAttributes().get("kakao_account");
         String email = (String) kakaoAccount.get("email");
-        Map<String, Object> properties = (Map<String, Object>) oAuth2User.getAttributes().get("properties");
-        String nickname = (String) properties.get("nickname");
+        Map<String, Object> profile = (Map<String, Object>) oAuth2User.getAttributes().get("profile");
+        String nickname = (String) profile.get("nickname");
 
         // 클레임 생성
         Map<String, Object> claims = Map.of(
@@ -58,18 +60,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-        // 성공 페이지로 리디렉션
-        getRedirectStrategy().sendRedirect(request, response, "http://localhost:3000/journeybuddy/oauth");
+        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:8080/login/access")
+                .queryParam("token", token)
+                .build()
+                .toUriString();
 
-
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
 
     }
-    /*
-    private String makeRedirectUrl(String token) {
-        return UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/redirect/"+token)
-                .build().toUriString();
-    }
-
-     */
 }
 

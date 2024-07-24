@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -24,6 +25,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
+
+import static javax.crypto.Cipher.SECRET_KEY;
 
 @Component
 @Slf4j
@@ -64,6 +67,18 @@ public class JwtUtil {
                 .getBody();
     }
 
+
+    //oauth2발급받는 토큰
+    public String generateOAuthToken(Map<String, Object> claims) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpTime))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    //일반로그인 발급 토큰
     public String generateToken(Map<String, Object> claims, User user) {
         return Jwts.builder()
                 .setClaims(claims)
@@ -74,20 +89,21 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateOAuthToken(Map<String, Object> claims) {
-        return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpTime))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+    //인증후 accessToken발급받음
+    public String createAccessToken(Authentication authentication) {
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = customUserDetails.getUser();
+        return generateToken(Collections.emptyMap(), user);
     }
 
+
+    //토큰인증
     public Authentication getAuthentication(String token) {
         String userEmail = extractUserEmail(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
+
 
     public boolean isExpired(String token) {
         Claims claims = Jwts.parserBuilder()
@@ -99,11 +115,7 @@ public class JwtUtil {
         return expiration.before(new Date());
     }
 
-    public String createAccessToken(Authentication authentication) {
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        User user = customUserDetails.getUser();
-        return generateToken(Collections.emptyMap(), user);
-    }
+
 
     public String createRefreshToken() {
         return Jwts.builder()
