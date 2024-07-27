@@ -5,6 +5,7 @@ import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
 import journeybuddy.spring.domain.User;
 import journeybuddy.spring.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class KaKaoService {
 
     private final UserRepository userRepository;
@@ -39,13 +41,16 @@ public class KaKaoService {
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("POST");
         con.setDoOutput(true);
+        con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 
         //서버로 요청 보내기
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(con.getOutputStream()));
+
+
         StringBuilder sb = new StringBuilder();
         sb.append("grant_type=authorization_code");
         sb.append("&client_id=3ca10b8a1bcbd4d9809b2c1b8169aacf");
-        sb.append("&redirect_uri=http://localhost:8080/login/access");
+        sb.append("&redirect_uri=http://localhost:3000/journeybuddy/oauth");
         sb.append("&code=" + code);
         bw.write(sb.toString());
         bw.flush();
@@ -100,6 +105,9 @@ public class KaKaoService {
         String nickname = properties.has("nickname") ? properties.get("nickname").getAsString() : null;
         String email = kakaoAccount.has("email") ? kakaoAccount.get("email").getAsString() : null;
         String birthday = kakaoAccount.has("birthday") ? kakaoAccount.get("birthday").getAsString() : null;
+
+        log.info("nickname:{}",nickname);
+        log.info("email:{}",email);
 
         // DB에서 사용자 조회 및 저장
         Optional<User> existingUser = userRepository.findByEmail(email);

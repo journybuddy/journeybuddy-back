@@ -1,10 +1,8 @@
 package journeybuddy.spring.config.OAuth2;
 
-import journeybuddy.spring.domain.Role;
 import journeybuddy.spring.domain.User;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
