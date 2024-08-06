@@ -4,7 +4,7 @@ spring:
       client:
         registration:
           kakao:
-            client-id: 3ca10b8a1bcbd4d9809b2c1b8169aacf
+            client-id: ${KAKAO_CLIENT_ID}
             redirect-uri: http://localhost:3000/journeybuddy/oauth
             client-authentication-method: POST
             authorization-grant-type: authorization_code

@@ -3,10 +3,13 @@ package journeybuddy.spring.config.OAuth2;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
+import journeybuddy.spring.domain.Role;
 import journeybuddy.spring.domain.User;
+import journeybuddy.spring.repository.RoleRepository;
 import journeybuddy.spring.repository.UserRepository;
+import journeybuddy.spring.config.AppConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -16,6 +19,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -23,61 +27,62 @@ import java.util.Optional;
 public class KaKaoService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final String clientId;
 
-    public KaKaoService(UserRepository userRepository) {
+    @Autowired
+    public KaKaoService(UserRepository userRepository, RoleRepository roleRepository, AppConfig appConfig) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.clientId = appConfig.getKakaoClientId();
     }
 
     public String getToken(String code) throws Exception {
         String access_Token = "";
-
-        //EndPoint URL = API가 서버에서 자원에 접근할 수 있도록 하는 URL
         final String requestUrl = "https://kauth.kakao.com/oauth/token";
-
-        //토큰을 요청할 URL 객체 생성
         URL url = new URL(requestUrl);
-
-        //HTTP 연결 설정
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("POST");
         con.setDoOutput(true);
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 
-        //서버로 요청 보내기
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(con.getOutputStream()));
-
-
         StringBuilder sb = new StringBuilder();
         sb.append("grant_type=authorization_code");
-        sb.append("&client_id=3ca10b8a1bcbd4d9809b2c1b8169aacf");
+        sb.append("&client_id=").append(clientId);
         sb.append("&redirect_uri=http://localhost:3000/journeybuddy/oauth");
-        sb.append("&code=" + code);
+        sb.append("&code=").append(code);
         bw.write(sb.toString());
         bw.flush();
 
-        //서버의 응답 데이터 가져옴
-        BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        String line = "";
-        String result = "";
+        log.info("Requesting token with parameters: {}", sb.toString());
 
-        //result에 토큰이 포함된 응답데이터를 한줄씩 저장
-        while ((line = br.readLine()) != null) {
-            result += line;
+        // 응답 코드 확인
+        int responseCode = con.getResponseCode();
+        log.info("Response Code: {}", responseCode);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String line;
+            StringBuilder result = new StringBuilder();
+
+            while ((line = br.readLine()) != null) {
+                result.append(line);
+            }
+
+            log.info("Token response: {}", result.toString());
+
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(result.toString());
+            access_Token = element.getAsJsonObject().get("access_token").getAsString();
+
+            br.close();
+            bw.close();
+        } else {
+            throw new RuntimeException("Failed to get access token: " + responseCode);
         }
 
-        //JSON 데이터를 파싱하기 위한 JsonParser
-        JsonParser parser = new JsonParser();
-        //값 추출을 위해 파싱한 데이터를 JsonElement로 변환
-        JsonElement element = parser.parse(result);
-
-        //element에서 access_token 값을 얻어옴
-        access_Token = element.getAsJsonObject().get("access_token").getAsString();
-
-        br.close();
-        bw.close();
-
         return access_Token;
-
     }
 
     public User getUserInfo(String accessToken) throws Exception {
@@ -106,22 +111,32 @@ public class KaKaoService {
         String email = kakaoAccount.has("email") ? kakaoAccount.get("email").getAsString() : null;
         String birthday = kakaoAccount.has("birthday") ? kakaoAccount.get("birthday").getAsString() : null;
 
-        log.info("nickname:{}",nickname);
-        log.info("email:{}",email);
+        log.info("nickname:{}", nickname);
+        log.info("email:{}", email);
 
         // DB에서 사용자 조회 및 저장
         Optional<User> existingUser = userRepository.findByEmail(email);
         User user;
+
+        // role 권한 부여 추가 (현재는 role 공백이어도 로그인 가능하게 처리해 놓음)
+        if (roleRepository.findByName("USER").isEmpty()) {
+            Role userRole = Role.builder().name("USER").build();
+            roleRepository.save(userRole);
+        }
+
         if (!existingUser.isPresent()) {
+            Role defaultRole = roleRepository.findByName("USER")
+                    .orElseThrow(() -> new RuntimeException("Default role not found"));
+
             user = User.builder()
                     .nickname(nickname)
                     .email(email)
+                    .roles(Collections.singletonList(defaultRole))
                     .build();
             userRepository.save(user);
         } else {
             user = existingUser.get();
         }
-
         return user;
     }
 }
