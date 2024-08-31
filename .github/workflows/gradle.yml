@@ -39,7 +39,7 @@ jobs:
 
 
       - name: Build with Gradle
-        run: ./gradlew clean build --info
+        run: ./gradlew clean build
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
