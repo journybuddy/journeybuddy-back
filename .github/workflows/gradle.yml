@@ -52,10 +52,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Push Docker image to Docker Hub
+      - name: Pull Docker image from Docker Hub
         run: |
-          docker tag my-app-image ${{ secrets.DOCKER_USERNAME }}/back_heewon_yubin:journey
-          docker push ${{ secrets.DOCKER_USERNAME }}/back_heewon_yubin:journey
+          docker pull ${{ secrets.DOCKER_USERNAME }}/back_heewon_yubin:journey
 
       - name: Deploy to EC2
         env:
@@ -66,7 +65,6 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
           ssh -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            docker pull ${{ secrets.DOCKER_USERNAME }}/back_heewon_yubin:journey
             docker stop my-running-container || true
             docker rm my-running-container || true
             docker run -d --name my-running-container -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/back_heewon_yubin:journey
