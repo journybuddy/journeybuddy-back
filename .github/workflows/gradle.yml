@@ -26,6 +26,15 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
 
+      - name: Set up application-secret.properties
+        run: echo "${{ secrets.APPLICATION_SECRET }}" > ./src/main/resources/application-secret.properties
+
+      - name: Set up application.properties
+        run: echo "spring.config.import=application-secret.properties" > ./src/main/resources/application.properties
+
+
+
+
       - name: Build with Gradle
         run: ./gradlew clean build --info
 
