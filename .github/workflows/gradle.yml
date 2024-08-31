@@ -28,8 +28,8 @@ jobs:
 
       - name: Create application-secret.properties and config.properties
         run: |
-          echo "${{ secrets.APPLICATION_SECRET }}" > src/main/resources/application-secret.properties
-          echo "${{ secrets.CONFIG }}" > src/main/resources/config.properties
+          echo "${{ secrets.APPLICATION_SECRET }}" > ./src/main/resources/application-secret.properties
+          echo "${{ secrets.CONFIG }}" > ./src/main/resources/config.properties
         shell: bash
 
       - name: Set up application.properties
