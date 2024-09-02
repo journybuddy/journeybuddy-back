@@ -3,6 +3,19 @@ FROM bellsoft/liberica-openjdk-alpine:18
 # FROM openjdk:8-jdk-alpine
 # FROM openjdk:11-jdk-alpine
 
+# Copy the Gradle wrapper and build script
+COPY gradlew ./
+COPY gradle /app/gradle
+RUN chmod +x gradlew
+
+COPY src /app/src
+COPY settings.gradle.kts /app
+COPY build.gradle.kts /app
+
+# Run Gradle to build the application
+RUN ./gradlew clean build
+
+
 CMD ["./gradlew", "clean", "build"]
 # or Maven
 # CMD ["./mvnw", "clean", "package"]
@@ -15,7 +28,7 @@ ARG JAR_FILE=build/libs/*.jar
 
 COPY ${JAR_FILE} app.jar
 
-COPY application-secret.properties /app/config/application-secret.properties
+COPY src/resources/application-secret.properties /app/config/application-secret.properties
 
 EXPOSE 8080
 
