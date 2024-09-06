@@ -8,9 +8,6 @@ COPY gradlew ./
 COPY gradle /app/gradle
 RUN chmod +x gradlew
 
-COPY src /app/src
-COPY settings.gradle.kts /app
-COPY build.gradle.kts /app
 
 # Run Gradle to build the application
 RUN ./gradlew clean build
