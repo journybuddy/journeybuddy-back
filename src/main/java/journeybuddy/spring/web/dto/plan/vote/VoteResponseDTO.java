@@ -19,8 +19,6 @@ public class VoteResponseDTO {
     LocalDate startDate;
     LocalDate endDate;
     Long planId;
-    //    boolean isAdmin; //권한이 있는 사용자인지
-//    boolean canVote; //중복투표인지 확인
     List<VoteOptionResponseDTO> options;
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate createdAt;

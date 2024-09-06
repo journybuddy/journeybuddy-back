@@ -25,7 +25,7 @@ public class VoteOption {
     @JoinColumn(name = "vote_id")
     private Vote vote;
 
-    //각 항목에 대한 투표 수
+
     @Column(nullable = false)
     private int voteCount;
 

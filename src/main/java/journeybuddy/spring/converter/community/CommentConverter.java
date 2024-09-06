@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class CommentConverter {
 
-    //comment에서 받아와서 toCommentResponseDTO로
+
     public static CommentResponseDTO toCommentResponseDTO(Comment comment) {
         return CommentResponseDTO.builder()
                 .id(comment.getCommentId())
@@ -31,7 +31,7 @@ public class CommentConverter {
                 .build();
     }
 
-    //paging 에 필요한 converter
+
     public static Page<CommentResponseDTO> toCommentDTOPage(Page<Comment> comments) {
         Page<CommentResponseDTO> CommentDTOList =
                 comments.map(page->CommentResponseDTO.builder()

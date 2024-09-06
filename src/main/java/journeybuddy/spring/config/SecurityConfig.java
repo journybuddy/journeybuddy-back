@@ -40,7 +40,7 @@ public class SecurityConfig{
 
     private final UserRepository userRepository;
     private final CustomUserDetailsService customUserDetailsService;
-//    private final CustomOAuth2UserService customOAuth2UserService;
+
 
 
     @Value("${spring.jwt.secretkey}")
@@ -66,15 +66,6 @@ public class SecurityConfig{
         return new BCryptPasswordEncoder();
     }
 
-    //수동으로 DaoAuthenticationProvider 만듦. 아이디 비밀번호 비교 역할. 혹은 AuthenticationBuilder 사용해야함
-    //현재 경고뜸. 삭제해야함(AuthenticationManager가 authenticationProvider제공)
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(customUserDetailsService);
-        provider.setPasswordEncoder(bCryptPasswordEncoder());
-        return provider;
-    }
 
     @Bean
     public DelegatingSecurityContextRepository delegatingSecurityContextRepository() {
@@ -85,32 +76,16 @@ public class SecurityConfig{
     }
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
+    public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
                 .requestMatchers("/error", "/favicon.ico","/api-document/**",
                         "/swagger-ui/**");
     }
 
-    //다른 도메인에서 리소스에 접근할 수 있도록 웹 어플리케이션간의 리소스 공유를 허용하는 메커니즘
-    /*
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");  // 스웨거 UI의 호스트 서버 주소를 지정해야 할 수 있습니다.
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-
-     */
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // React 앱의 URL
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -126,13 +101,7 @@ public class SecurityConfig{
     public JwtUtil jwtUtil() {
         return new JwtUtil(secretKey, customUserDetailsService, accessTokenExpTime);
     }
-/*
-    @Bean
-    public OAuth2SuccessHandler oAuth2SuccessHandler() {
-        return new OAuth2SuccessHandler(jwtUtil(), userRepository);
-    }
 
- */
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -148,11 +117,9 @@ public class SecurityConfig{
                         .requestMatchers(HttpMethod.POST, "/user/login/*").permitAll()
                         .requestMatchers("/user/delete/*").permitAll()
                         .requestMatchers("/user/update/*").permitAll()
-                        //        .requestMatchers("/user/**").permitAll()
                         .requestMatchers("/", "/user/login", "/user/register").permitAll()
                         .requestMatchers("/", "/api*", "/api-docs/**", "/swagger-ui/**","/v3/**").permitAll()
                        .anyRequest().permitAll()
-                        //        .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception->exception
                                 .accessDeniedHandler(new JwtAccessDeniedHandler())
@@ -161,15 +128,6 @@ public class SecurityConfig{
                 .securityContext((securityContext) -> {
                     securityContext.requireExplicitSave(true);
                 })
-        /*        .oauth2Login(oauth2Login -> oauth2Login
-                        .failureUrl("/login?error=true")
-                        .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
-                                .userService(customOAuth2UserService)
-                        )
-                                .successHandler(oAuth2SuccessHandler())
-                )
-
-         */
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

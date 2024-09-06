@@ -44,14 +44,14 @@ public class UserLikeServiceImpl implements UserLikeService {
                 .post(post)
                 .build();
 
-        // 좋아요 수 증가
+
         post.setLikeCount(post.getLikeCount() + 1);
         userLikeRepository.save(newUserLike);
 
         return UserLikeConverter.toUserLikeResponesDTO(newUserLike);
     }
 
-    // 좋아요 취소
+
     @Override
     public void deleteLikes(String userEmail, Long postId) {
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User not found"));
@@ -63,12 +63,12 @@ public class UserLikeServiceImpl implements UserLikeService {
             throw new RuntimeException("좋아요를 누르지 않은 게시물입니다.");
         }
 
-        // 좋아요 수 감소
+
         post.setLikeCount(post.getLikeCount() - 1);
         userLikeRepository.delete(userLike.get());
     }
 
-    //내가 누른 좋아요 확인
+
     public Page<UserLikeResponesDTO> findMyLike(String userEmail,Pageable pageable){
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User not found"));
 

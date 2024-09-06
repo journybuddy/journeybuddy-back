@@ -13,9 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VoteRequestDTO {
-    //vote를 생성함
     Long planId;
-    //    Long userId; //삭제할 지 나중에 정하기
     String title;
     String description;
     @JsonFormat(pattern = "yy-MM-dd HH:mm")

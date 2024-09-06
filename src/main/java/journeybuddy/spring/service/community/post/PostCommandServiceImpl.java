@@ -33,7 +33,6 @@ public class PostCommandServiceImpl implements PostCommandService {
     public List<Post> checkMyPost(String email) { //리스트타입 나중에 페이징처리할것
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty()) {
-            log.error("존재하지 않는 사용자");
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         } else {
             return postRepository.findPostsByUserEmail(email);
@@ -49,30 +48,20 @@ public class PostCommandServiceImpl implements PostCommandService {
         }
         Post post = optionalPost.get();
         if (!post.getUser().getEmail().equals(authentication)) {
-            log.error("권한이 없는 사용자가 포스트에 접근하려고 했습니다. postId: {}, username: {}", postId, authentication);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "작성자만 접근할 수 있습니다.");
         }
         return optionalPost.get();
     }
-//
-//    @Override
-//    public Post savePost(String userEmail, Post post) { //userId가 외래키
-//        User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("해당계정이 존재하지 않습니다"));
-//        post.setUser(user);
-//        log.info("Saving post: {}", post);
-//        return postRepository.save(post);
-//    }
+
 
     @Override
     public Post deletePost(Long postId,String authentication) {
         Optional<Post> posts = postRepository.findById(postId);
         if (posts.isEmpty()) {
-            log.error("존재하지 않는 포스트 입니다,Id:{}", postId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         Post post = posts.get();
         if (!post.getUser().getEmail().equals(authentication)) {
-            log.error("권한이 없는 사용자가 포스트에 접근하려고 했습니다. postId: {}, username: {}", postId, authentication);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "작성자만 접근할 수 있습니다.");
         }
         postRepository.deleteById(postId);
@@ -83,7 +72,6 @@ public class PostCommandServiceImpl implements PostCommandService {
     @Override
     public List<PostListResponse> getPosts(Pageable pageable) {
         Page<Post> posts = postRepository.findAll(pageable);
-        //stream을 이용해서 엔티티를 응답객체로 변경
         List<PostListResponse> postResponseDTOS = posts.stream()
                 .map(PostConverter::toPostListResponse)
                 .collect(Collectors.toList());
@@ -110,7 +98,6 @@ public class PostCommandServiceImpl implements PostCommandService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    log.error("User not found with email: {}", email);
                     return new UsernameNotFoundException("User not found with email: " + email);
                 });
 

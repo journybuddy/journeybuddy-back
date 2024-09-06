@@ -71,7 +71,7 @@ public class MyPageController {
         return ApiResponse.onSuccess(scrapPage);
     }
 
-    //게시글 삭제
+
     @DeleteMapping("/posts/{postId}/delete")
     @Operation(summary = "게시글 삭제", description = "게시글 삭제")
     public ApiResponse<?> deletePost(@PathVariable("postId") Long postId, @AuthenticationPrincipal  UserDetails userDetails) {
@@ -85,7 +85,7 @@ public class MyPageController {
         return null;
     }
 
-    //페이징 처리 되어있음
+
     @GetMapping("/my_posts/posts/my_posts")
     @Operation(summary = "내가 쓴 게시글 리스트 확인", description = "내가 쓴 게시글 리스트 확인")
     public ApiResponse<Page<PostListResponse>> getMyPostsPage(@RequestParam(defaultValue = "0") int page,
@@ -133,7 +133,7 @@ public class MyPageController {
         return ApiResponse.onSuccess(checkMyComment);
     }
 
-    // 나의 계획 리스트 조회
+
     @GetMapping("/plans")
     @Operation(summary = "나의 계획 리스트 조회", description = "나의 계획 리스트 조회")
     public ResponseEntity<List<PlanListResponse>> getMyPlans(@AuthenticationPrincipal UserDetails userDetails,
