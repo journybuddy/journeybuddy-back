@@ -9,7 +9,5 @@ import lombok.*;
 @Getter
 @Setter
 public class ScrapRequestDTO {
-//    private Long id;
     private Long postId;
-//    private Long userId;
 }

@@ -16,11 +16,6 @@ public class UserRequestDTO {
     public static class UpdateDTO {
         String bio;
         String profile_image;
-//        String email;
-//        String nickname;
-//        String password;
-//        LocalDateTime updatedAt;
-
 
     }
 
@@ -29,13 +24,12 @@ public class UserRequestDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class RegisterDTO{
- //       Long id;
+
         String bio;
         String email;
         String nickname;
         String password;
-//        LocalDateTime createdAt;
-//        LocalDateTime updatedAt;
+
     }
 
     @Getter

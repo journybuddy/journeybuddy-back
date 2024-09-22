@@ -12,7 +12,7 @@ public class JsonConfig {
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule()); // JavaTimeModule 등록
+        objectMapper.registerModule(new JavaTimeModule());
         objectMapper.setDateFormat(new SimpleDateFormat("yy-MM-dd HH:mm"));
 
         return objectMapper;

@@ -20,7 +20,7 @@ public class RandomURLServiceImpl {
     private final RandomUtils randomUtils;
 
     public String createRandomURL(Long planId,String email) {
-        //length랑 boolean
+
         String RandomString = RandomUtils.generateRandomURL(10,false);
         String RandomURL =  "https://journeyBuddy.com/invite/" + RandomString;
 

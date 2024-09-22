@@ -17,7 +17,7 @@ public class RandomURLController {
 
     private  final RandomURLServiceImpl randomURLService;
 
-    //한 플랜당 url한개 만들 수 있음
+
     @Operation(summary = "랜덤 URL 생성", description = "랜덤 URL 생성")
     @GetMapping("/make_URL/{planId}")
     public String makeURL(@PathVariable Long planId, @AuthenticationPrincipal UserDetails userDetails) {

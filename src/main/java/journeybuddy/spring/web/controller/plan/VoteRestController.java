@@ -40,7 +40,7 @@ public class VoteRestController {
             @RequestBody VoteRequestDTO voteRequestDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        // 유저 확인
+
         String userEmail = userDetails.getUsername();
         log.info("Received VoteRequestDTO: " + userEmail);
         VoteResponseDTO.VoteMakeResponseDTO options = voteCommandService.makeVote(voteRequestDTO, userEmail);

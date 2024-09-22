@@ -18,7 +18,7 @@ public class PostConverter {
     }
 
 
-    //게시글 상세보기
+
     public static PostDetailResponse toPostDetailResponse(Post post, Page<Comment> commentPage, boolean isLiked, boolean isScrapped) {
         return PostDetailResponse.builder()
                 .postId(post.getId())
@@ -49,7 +49,7 @@ public class PostConverter {
                 .build();
     }
 
-    //게시글 목록보기
+
     public static PostListResponse toPostListResponse(Post post) {
         return PostListResponse.builder()
                 .postId(post.getId())
@@ -79,7 +79,7 @@ public class PostConverter {
     }
 
 
-        public static PostResponseDTO toPostResponseDTO(Post post) {  //post에서 받아옴 PostResponseDTO로
+        public static PostResponseDTO toPostResponseDTO(Post post) {
             return PostResponseDTO.builder()
                     .id(post.getId())
                     .content(post.getContent())
@@ -88,10 +88,10 @@ public class PostConverter {
                     .build();
         }
 
-        /* Page<Entity> -> Page<Dto> 변환처리 */
+
         public static Page<PostResponseDTO> toDtoList(Page<Post> posts) {
             return posts.map(post -> {
-                //null확인안하면 exception발생
+
                 Long userId = (post.getUser() != null) ? post.getUser().getId() : null;
 
                 return PostResponseDTO.builder()

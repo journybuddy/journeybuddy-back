@@ -12,7 +12,7 @@ public class RandomUtils {
     private static final String UPPER_CASE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final String LOWER_CASE_CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-    //랜덤한 숫자를 반환한다
+
     public static String generateRandomURL(int length, boolean isUpperCase) {
         String characters = isUpperCase ? UPPER_CASE_CHARACTERS : LOWER_CASE_CHARACTERS;
         SecureRandom secureRandom = new SecureRandom();

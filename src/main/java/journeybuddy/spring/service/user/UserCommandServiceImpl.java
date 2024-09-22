@@ -37,24 +37,24 @@ public class UserCommandServiceImpl implements UserCommandService {
 
         User addUser = UserUpdateConverter.toUser(request, bCryptPasswordEncoder);
 
-        // 기본 역할을 가져오기
-        Role defaultRole = roleRepository.findByName("USER")
-                .orElse(null); // 기본 역할이 없을 경우 null 반환
 
-        // 기본 역할이 존재하면 사용자에게 설정, 없으면 빈 역할 목록 설정
+        Role defaultRole = roleRepository.findByName("USER")
+                .orElse(null);
+
+
         if (defaultRole != null) {
             addUser.setRoles(Collections.singletonList(defaultRole));
         } else {
-            addUser.setRoles(Collections.emptyList()); // 역할 없이도 사용자 추가 가능
+            addUser.setRoles(Collections.emptyList());
         }
 
-        // 이메일이 이미 존재하는지 확인
+
         if (userRepository.existsByEmail(request.getEmail())) {
-            log.error("이미 존재하는 이메일입니다.");
+
             throw new RuntimeException("이미 존재하는 이메일입니다.");
         }
 
-        // 사용자 저장
+
         return userRepository.save(addUser);
     }
 
@@ -64,25 +64,22 @@ public class UserCommandServiceImpl implements UserCommandService {
         User existingUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new TempHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 프로필 이미지가 업로드된 경우
+
         if (profileImage != null && !profileImage.isEmpty()) {
             try {
-                // 이미지 업로드 후 URL 반환
+
                 String imageUrl = uploadImage(profileImage);
                 existingUser.setProfile_image(imageUrl);
             } catch (IOException e) {
                 throw new RuntimeException("Profile image upload failed", e);
             }
         } else if (request.getProfile_image() != null && !request.getProfile_image().isEmpty()) {
-            // 기존 URL이 있는 경우 URL을 설정
+
             existingUser.setProfile_image(request.getProfile_image());
         }
 
-        // 기타 필드 업데이트
-        existingUser.setBio(request.getBio());
-    //    existingUser.setNickname(request.getNickname());
-        // existingUser.setUpdatedAt(LocalDateTime.now()); // 필요시 업데이트 시간 설정
 
+        existingUser.setBio(request.getBio());
         return userRepository.save(existingUser);
     }
     @Override
@@ -134,7 +131,6 @@ public class UserCommandServiceImpl implements UserCommandService {
             throw new IllegalArgumentException("Image file cannot be null or empty");
         }
         try {
-            // 이미지 파일을 S3에 업로드하고 URL을 반환받습니다.
             return s3ImageService.upload(image, "profile-images");
         } catch (IOException e) {
             throw new IOException("Failed to upload image: " + image.getOriginalFilename(), e);

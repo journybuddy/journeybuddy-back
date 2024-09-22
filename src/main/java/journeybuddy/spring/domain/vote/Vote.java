@@ -42,12 +42,12 @@ public class Vote extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    //한 플랜에 여러개의 투표항목을 만들 수 있음
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
-    //voteOption은 한 vote에 여러개가 존재함
+
     @OneToMany(mappedBy = "vote", cascade = CascadeType.ALL)
     private List<VoteOption> votePlaceList = new ArrayList<>();
 

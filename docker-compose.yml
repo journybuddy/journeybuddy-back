@@ -1,9 +1,0 @@
-
-
-
-services:
-  app:
-    build: .
-    container_name: spring_boot_app
-    ports:
-      - "8080:8080"
