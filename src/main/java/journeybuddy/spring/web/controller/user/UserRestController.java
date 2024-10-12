@@ -31,35 +31,7 @@ public class UserRestController {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
 
-    /*
-    @PostMapping("/register")
-    public ResponseEntity<?> registrationForm(@RequestBody @Valid UserRequestDTO.RegisterDTO request,
-                                              BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
-        }
 
-        try {
-            User newUser = userCommandService.addUser(request);
-            Map<String, Object> response = new HashMap<>();
-            response.put("userId", newUser.getId());
-
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null) {
-                response.put("username", authentication.getName()); // 사용자 이름
-                response.put("authorities", authentication.getAuthorities()); // 권한 목록
-            }
-            log.info("회원가입 완료");
-            log.info("현재 사용자: {}", authentication != null ? authentication.getName() : "인증되지 않음");
-
-            return ResponseEntity.ok(ApiResponse.onSuccess(response));
-        } catch (Exception e) {
-            log.error("이미 존재하는 사용자임", e);
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.onFailure("Duplicated Email","회원가입 중 문제발생", null));
-        }
-    }
-*/
     @PutMapping(value = "/update", consumes = {"multipart/form-data"})
     public ResponseEntity<User> updateUser(
             @RequestPart(required = false) String bio,
@@ -80,43 +52,7 @@ public class UserRestController {
         return ResponseEntity.ok(user);
     }
 
-/*
-    @PostMapping("/login")
-    public ResponseEntity<?> loginForm(@RequestBody @Valid UserRequestDTO.LoginDTO request) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-            User user = customUserDetails.getUser();
-
-            String accessToken = jwtUtil.createAccessToken(authentication);
-            String refreshToken = jwtUtil.createRefreshToken();
-
-
-            RefreshToken refreshTokenEntity = RefreshToken.builder()
-                    .key(user.getEmail())
-                    .value(refreshToken)
-                    .build();
-            refreshTokenRepository.save(refreshTokenEntity);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("userId", user.getId());
-            response.put("userEmail", user.getEmail());
-            response.put("token", accessToken);
-            response.put("refreshToken",refreshToken);
-
-            log.info("로그인완료");
-            return ResponseEntity.ok(ApiResponse.onSuccess(response));
-        } catch (AuthenticationException e) {
-            log.error("인증 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패");
-        }
-    }
-*/
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable("userId") Long userId,
                                         @RequestBody @Valid UserRequestDTO.LoginDTO request) {
@@ -129,11 +65,6 @@ public class UserRestController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.onFailure("common403", "접근권한없는사용자", null));
         }
-
-    //    if (!bCryptPasswordEncoder.matches(request.getPassword(), encodedPassword)) {
-    //        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-    //                .body(ApiResponse.onFailure("common401", "비밀번호가 일치하지 않음", null));
-    //    }
 
         try {
             userCommandService.deletedById(userId);

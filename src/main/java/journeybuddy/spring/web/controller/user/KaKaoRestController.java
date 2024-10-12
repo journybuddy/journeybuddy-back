@@ -24,7 +24,7 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class KaKaoRestController {
 
-    private final UserDetailsService userDetailsService;
+
     private final JwtUtil jwtUtil;
     private final KaKaoService kakaoService;
     private final ObjectMapper objectMapper;

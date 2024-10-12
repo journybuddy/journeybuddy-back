@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import journeybuddy.spring.domain.common.BaseEntity;
 import journeybuddy.spring.domain.community.Comment;
 import journeybuddy.spring.domain.community.Post;
+import journeybuddy.spring.domain.community.Scrap;
 import journeybuddy.spring.domain.community.UserLike;
 import journeybuddy.spring.domain.plan.Plan;
 import journeybuddy.spring.domain.vote.Vote;
@@ -68,6 +69,11 @@ public class User extends BaseEntity{
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Plan> plans = new ArrayList<>();
+
+    @JsonIgnore
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Scrap> scrapList = new ArrayList<>();
 
 
     @ManyToMany(fetch = FetchType.EAGER)
